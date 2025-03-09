@@ -3,10 +3,10 @@
 
 #include "MaterialInstanceFinder.h"
 
-MaterialInstanceFinder::MaterialInstanceFinder()
+FMaterialInstanceFinder::FMaterialInstanceFinder()
 {
 }
 
-MaterialInstanceFinder::~MaterialInstanceFinder()
+FMaterialInstanceFinder::~FMaterialInstanceFinder()
 {
 }

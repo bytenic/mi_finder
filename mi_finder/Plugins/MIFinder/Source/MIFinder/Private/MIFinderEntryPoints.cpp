@@ -3,8 +3,12 @@
 
 #include "MIFinderEntryPoints.h"
 
-
-bool UMIFinderEntryPoints::FilterMaterials()
+float UMIFinderEntryPoints::MIFinderSampleFunction(float Param)
 {
-	return true;
+	return .0f;
+}
+
+float UMIFinderEntryPoints::OpenFinderWindow(float Param)
+{
+	
 }

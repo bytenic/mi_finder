@@ -3,13 +3,34 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Serialization/JsonSerializerMacros.h"
 
-/**
- * 
- */
-class MIFINDER_API MaterialInstanceFinder
+
+struct FMIFinderStaticSwitchQuery : public FJsonSerializable
+{
+	BEGIN_JSON_SERIALIZER
+	JSON_SERIALIZE("ParameterName", ParameterName);
+
+	END_JSON_SERIALIZER
+
+	FString ParameterName{};
+};
+
+struct FMIFinderQuery : public FJsonSerializable
+{
+	BEGIN_JSON_SERIALIZER
+	JSON_SERIALIZE("SearchRoot", SearchRoot);
+	JSON_SERIALIZE_ARRAY_SERIALIZABLE("StaticSwitch", StaticSwitchQueries, FMIFinderStaticSwitchQuery);
+	END_JSON_SERIALIZER
+
+	FString SearchRoot{};
+	TArray<FMIFinderStaticSwitchQuery> StaticSwitchQueries{};
+	
+};
+
+class MIFINDER_API FMaterialInstanceFinder
 {
 public:
-	MaterialInstanceFinder();
-	~MaterialInstanceFinder();
+	FMaterialInstanceFinder();
+	~FMaterialInstanceFinder();
 };

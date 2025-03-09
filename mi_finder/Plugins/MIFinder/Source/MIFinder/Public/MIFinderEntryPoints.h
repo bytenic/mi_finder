@@ -13,10 +13,11 @@ UCLASS()
 class MIFINDER_API UMIFinderEntryPoints : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
-	
-public:
-	UFUNCTION(BlueprintCallable, Category="MIFinder")
-	static bool FilterMaterials();
-	
-	
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Execute Sample function", Keywords = "MIFinder sample test testing"), Category = "MIFinderTesting")
+	static float MIFinderSampleFunction(float Param);
+
+
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "OpenFinderWindow", Keywords = "MIFinder Open"), Category = "MIFinder")
+	static float OpenFinderWindow(float Param);
+
 };
