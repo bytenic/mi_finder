@@ -10,5 +10,5 @@ float UMIFinderEntryPoints::MIFinderSampleFunction(float Param)
 
 float UMIFinderEntryPoints::OpenFinderWindow(float Param)
 {
-	
+	return .0f;
 }

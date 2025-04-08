@@ -26,4 +26,7 @@ private:
 
 private:
 	TSharedPtr<class FUICommandList> PluginCommands;
+
+private:
+	
 };
