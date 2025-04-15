@@ -9,7 +9,7 @@
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Text/STextBlock.h"
 #include "ToolMenus.h"
-#include "PropertyCustomizationHelpers.h"
+#include "Materials/Material.h"
 #include "Materials/MaterialFunctionMaterialLayer.h"
 #include "Materials/MaterialFunctionMaterialLayerBlend.h"
 
@@ -134,8 +134,16 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildRootMaterialBox()
 		.Padding(LayoutPadding)
 		[
 			SNew(SObjectPropertyEntryBox)
-				.AllowedClass(UMaterial::StaticClass())
-				//.OnObjectChanged(this, &FYourClass::OnAssetSelected) // コールバック関数
+				.AllowedClass(UMaterialInterface::StaticClass())
+				.ObjectPath(TAttribute<FString>::CreateLambda([this]()
+				{
+					if(!IsValid(SearchRootMaterial))
+					{
+						return FString{};
+					}
+					return SearchRootMaterial->GetPathName();
+				}))
+				.OnObjectChanged(FOnSetObject::CreateRaw(this, &FMIFinderModule::OnRootMaterialChanged))
 		]
 	];
 }
@@ -162,7 +170,15 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildSelectLayerFunctionBox()
 				[
 					SNew(SObjectPropertyEntryBox)
 					.AllowedClass(UMaterialFunctionMaterialLayer::StaticClass())
-					//.OnObjectChanged(this, &FYourClass::OnAssetSelected) // コールバック関数
+					.ObjectPath(TAttribute<FString>::CreateLambda([this]()
+					{
+						if(!IsValid(MaterialLayerAsset))
+						{
+							return FString{};
+						}
+						return MaterialLayerAsset->GetPathName();
+					}))
+					.OnObjectChanged(FOnSetObject::CreateRaw(this, &FMIFinderModule::OnRootMaterialLayerChanged))
 				]
 			]
 			+SHorizontalBox::Slot()
@@ -185,7 +201,15 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildSelectLayerFunctionBox()
 				[
 					SNew(SObjectPropertyEntryBox)
 					.AllowedClass(UMaterialFunctionMaterialLayerBlend::StaticClass())
-					//.OnObjectChanged(this, &FYourClass::OnAssetSelected) // コールバック関数
+					.ObjectPath(TAttribute<FString>::CreateLambda([this]()
+									{
+										if(!IsValid(MaterialBlendAsset))
+										{
+											return FString{};
+										}
+										return MaterialBlendAsset->GetPathName();
+									}))
+									.OnObjectChanged(FOnSetObject::CreateRaw(this, &FMIFinderModule::OnRootMaterialBlendChanged))
 			]
 		];
 }
@@ -217,6 +241,30 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildParametersBox()
 				.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
 				.Text(NSLOCTEXT("ParametersTab","ScalarText", "Scalar"))
 			];
+}
+
+void FMIFinderModule::OnRootMaterialChanged(const FAssetData& InAssetData)
+{
+	if(auto MaterialInterface = Cast<UMaterialInstance>(InAssetData.GetAsset()))
+	{
+		SearchRootMaterial = MaterialInterface;
+	}
+}
+
+void FMIFinderModule::OnRootMaterialLayerChanged(const FAssetData& InAssetData)
+{
+	if(auto MaterialLayer = Cast<UMaterialFunctionMaterialLayer>(InAssetData.GetAsset()))
+	{
+		MaterialLayerAsset = MaterialLayer;
+	}
+}
+
+void FMIFinderModule::OnRootMaterialBlendChanged(const FAssetData& InAssetData)
+{
+	if(auto MaterialBlend = Cast<UMaterialFunctionMaterialLayerBlend>(InAssetData.GetAsset()))
+	{
+		MaterialBlendAsset = MaterialBlend;
+	}
 }
 
 void FMIFinderModule::PluginButtonClicked()

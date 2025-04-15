@@ -8,6 +8,9 @@ class FToolBarBuilder;
 class FMenuBuilder;
 class SHorizontalBox;
 class SDockTab;
+class UMaterialInterface;
+class UMaterialFunctionMaterialLayer;
+class UMaterialFunctionMaterialLayerBlend;
 
 class FMIFinderModule : public IModuleInterface
 {
@@ -26,10 +29,20 @@ private:
 	TSharedRef<SHorizontalBox> BuildRootMaterialBox();
 	TSharedRef<SHorizontalBox> BuildSelectLayerFunctionBox();
 	TSharedRef<SHorizontalBox> BuildParametersBox();
+	void OnRootMaterialChanged(const FAssetData & InAssetData);
+	void OnRootMaterialLayerChanged(const FAssetData & InAssetData);
+	void OnRootMaterialBlendChanged(const FAssetData & InAssetData);
 	
 private:
 	TSharedPtr<FUICommandList> PluginCommands;
 
+	UPROPERTY()
+	TObjectPtr<UMaterialInterface> SearchRootMaterial{};
+	UPROPERTY()
+	TObjectPtr<UMaterialFunctionMaterialLayer> MaterialLayerAsset{};
+	UPROPERTY()
+	TObjectPtr<UMaterialFunctionMaterialLayerBlend> MaterialBlendAsset{};	
+	
 private:
 	static constexpr float LayoutPadding = 2.5f;
 	static constexpr float FontSize = 12.0f;
