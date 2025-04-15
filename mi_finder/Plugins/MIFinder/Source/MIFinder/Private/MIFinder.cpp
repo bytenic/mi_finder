@@ -10,6 +10,8 @@
 #include "Widgets/Text/STextBlock.h"
 #include "ToolMenus.h"
 #include "PropertyCustomizationHelpers.h"
+#include "Materials/MaterialFunctionMaterialLayer.h"
+#include "Materials/MaterialFunctionMaterialLayerBlend.h"
 
 static const FName MIFinderTabName("MIFinder");
 
@@ -65,121 +67,156 @@ TSharedRef<SDockTab> FMIFinderModule::OnSpawnPluginTab(const FSpawnTabArgs& Spaw
 	return SNew(SDockTab)
 		.TabRole(ETabRole::NomadTab)
 		[
-			// Put your tab content here!
 			SNew(SBox)
-			.HAlign(HAlign_Center)
-			.VAlign(VAlign_Center)
+			.HAlign(HAlign_Fill)
+			.VAlign(VAlign_Top)
 			[
-				//SearchRoot
 				SNew(SVerticalBox)
 				+SVerticalBox::Slot()
-				//.AutoHeight()
-				//.FillHeight(2.0)
+				.Padding(LayoutPadding)
 				[
-					SNew(STextBlock)
-						//.Font(FAppStyle::Get().GetFontStyle("SmallFontBold"))
-						//.ColorAndOpacity( FAppStyle::Get().GetSlateColor(  "Colors.White" ) )
-						.Text(NSLOCTEXT("AssetSearchTab","SearchRootText", "SearchRootPath"))
+					BuildRootMaterialBox()
 				]
-				+SVerticalBox::Slot()
-				[
-					SNew(SEditableTextBox)
-					.Text(NSLOCTEXT("AssetSearchTab","SearchRootTextBox", "SearchRootPathBox"))
-				]
-				+SVerticalBox::Slot()
-				[
-					SNew(STextBlock)
-					//.Font(FAppStyle::Get().GetFontStyle("SmallFontBold"))
-					//.ColorAndOpacity( FAppStyle::Get().GetSlateColor(  "Colors.White" ) )
-					.Text(NSLOCTEXT("AssetSearchTab","RootMaterialText", "Root Material"))
-				]
-				+SVerticalBox::Slot()
-				[
-					SNew(SObjectPropertyEntryBox)
-						.AllowedClass(UMaterial::StaticClass())
-						//.OnObjectChanged(this, &FYourClass::OnAssetSelected) // コールバック関数
-				]
-
-				//SelectFunctions
 				+ SVerticalBox::Slot()
 				.AutoHeight()
 				[
-					SNew(SHorizontalBox)
-					+SHorizontalBox::Slot()
-					.AutoWidth()
-					[
-						SNew(SVerticalBox)
-						+SVerticalBox::Slot()
-						. AutoHeight()
-						[
-							SNew(STextBlock)
-							//.Font(FAppStyle::Get().GetFontStyle("SmallFontBold"))
-							//.ColorAndOpacity( FAppStyle::Get().GetSlateColor(  "Colors.White" ) )
-							.Text(NSLOCTEXT("FunctionsSelectTab","MateriallayerText", "Material Layer"))
-						]
-						+SVerticalBox::Slot()
-						. AutoHeight()
-						[
-							SNew(SObjectPropertyEntryBox)
-							.AllowedClass(UMaterial::StaticClass())
-							//.OnObjectChanged(this, &FYourClass::OnAssetSelected) // コールバック関数
-						]
-						
-					]
-					+SHorizontalBox::Slot()
-						.AutoWidth()
-						[
-							SNew(SVerticalBox)
-							+SVerticalBox::Slot()
-							. AutoHeight()
-							[
-								SNew(STextBlock)
-								//.Font(FAppStyle::Get().GetFontStyle("SmallFontBold"))
-								//.ColorAndOpacity( FAppStyle::Get().GetSlateColor(  "Colors.White" ) )
-								.Text(NSLOCTEXT("FunctionsSelectTab","MaterialBlendText", "Material Blend"))
-							]
-							+SVerticalBox::Slot()
-							. AutoHeight()
-							[
-								SNew(SObjectPropertyEntryBox)
-								.AllowedClass(UMaterial::StaticClass())
-								//.OnObjectChanged(this, &FYourClass::OnAssetSelected) // コールバック関数
-							]
-						
-						]
+					BuildSelectLayerFunctionBox()
 				]
-				// Parameters
 				+ SVerticalBox::Slot()
 				.AutoHeight()
 				[
-					SNew(SHorizontalBox)
-					+SHorizontalBox::Slot()
-					//.FillWidth(1.0)
-					[
-						SNew(STextBlock)
-							//.Font(FAppStyle::Get().GetFontStyle("SmallFontBold"))
-							//.ColorAndOpacity( FAppStyle::Get().GetSlateColor(  "Colors.White" ) )
-							.Text(NSLOCTEXT("ParametersTab","StaticSwitchText", "Static Switch"))
-					]
-					+SHorizontalBox::Slot()
-					.AutoWidth()
-					[
-						SNew(STextBlock)
-							//.Font(FAppStyle::Get().GetFontStyle("SmallFontBold"))
-							//.ColorAndOpacity( FAppStyle::Get().GetSlateColor(  "Colors.White" ) )
-							.Text(NSLOCTEXT("ParametersTab","TexturePathText", "Texture"))
-					]
-					+SHorizontalBox::Slot()
-					.AutoWidth()
-					[
-						SNew(STextBlock)
-							//.Font(FAppStyle::Get().GetFontStyle("SmallFontBold"))
-							//.ColorAndOpacity( FAppStyle::Get().GetSlateColor(  "Colors.White" ) )
-							.Text(NSLOCTEXT("ParametersTab","ScalarText", "Scalar"))
-					]
+					BuildParametersBox()
 				]
 			]
 		];
+}
+
+TSharedRef<SHorizontalBox> FMIFinderModule::BuildRootMaterialBox()
+{
+	return SNew(SHorizontalBox)
+	+ SHorizontalBox::Slot()
+	.FillWidth(1.0f)
+	.Padding(LayoutPadding)
+	[
+		SNew(SVerticalBox)
+		+SVerticalBox::Slot()
+		.Padding(LayoutPadding)
+		[
+			SNew(STextBlock)
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+			.Text(NSLOCTEXT("AssetSearchTab","SearchRootText", "SearchRootPath"))
+		]
+		+SVerticalBox::Slot()
+		.Padding(LayoutPadding)
+		[
+			SNew(SBox)
+			.HeightOverride(EditableTextBoxHeight)
+			[
+				SNew(SEditableTextBox)
+				.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+				.Text(NSLOCTEXT("AssetSearchTab","SearchRootTextBox", "/Game"))
+			]
+		]
+	]
+	+ SHorizontalBox::Slot()
+	.FillWidth(1.0f)
+	.Padding(LayoutPadding)
+	[
+		SNew(SVerticalBox)
+		+SVerticalBox::Slot()
+		.Padding(LayoutPadding)
+		[
+			SNew(STextBlock)
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+			.Text(NSLOCTEXT("AssetSearchTab","RootMaterialText", "Root Material"))
+		]
+		+SVerticalBox::Slot()
+		.Padding(LayoutPadding)
+		[
+			SNew(SObjectPropertyEntryBox)
+				.AllowedClass(UMaterial::StaticClass())
+				//.OnObjectChanged(this, &FYourClass::OnAssetSelected) // コールバック関数
+		]
+	];
+}
+
+TSharedRef<SHorizontalBox> FMIFinderModule::BuildSelectLayerFunctionBox()
+{
+	return SNew(SHorizontalBox)
+	       +SHorizontalBox::Slot()
+			.FillWidth(1.0f)
+			.Padding(LayoutPadding)
+			[
+				SNew(SVerticalBox)
+				+SVerticalBox::Slot()
+				.AutoHeight()
+				.Padding(LayoutPadding)
+				[
+					SNew(STextBlock)
+					.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+					.Text(NSLOCTEXT("FunctionsSelectTab","MateriallayerText", "Material Layer"))
+				]
+				+SVerticalBox::Slot()
+				.AutoHeight()
+				.Padding(LayoutPadding)
+				[
+					SNew(SObjectPropertyEntryBox)
+					.AllowedClass(UMaterialFunctionMaterialLayer::StaticClass())
+					//.OnObjectChanged(this, &FYourClass::OnAssetSelected) // コールバック関数
+				]
+			]
+			+SHorizontalBox::Slot()
+			.FillWidth(1.0f)
+			.Padding(LayoutPadding)
+		    [
+				SNew(SVerticalBox)
+				+SVerticalBox::Slot()
+				. AutoHeight()
+				
+				.Padding(LayoutPadding)
+				[
+					SNew(STextBlock)
+					.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+					.Text(NSLOCTEXT("FunctionsSelectTab","MaterialBlendText", "Material Blend"))
+				]
+				+SVerticalBox::Slot()
+				. AutoHeight()
+				.Padding(LayoutPadding)
+				[
+					SNew(SObjectPropertyEntryBox)
+					.AllowedClass(UMaterialFunctionMaterialLayerBlend::StaticClass())
+					//.OnObjectChanged(this, &FYourClass::OnAssetSelected) // コールバック関数
+			]
+		];
+}
+
+TSharedRef<SHorizontalBox> FMIFinderModule::BuildParametersBox()
+{
+	return SNew(SHorizontalBox)
+			+SHorizontalBox::Slot()
+			.Padding(LayoutPadding)
+			.FillWidth(1.0f)
+			[
+				SNew(STextBlock)
+				.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+				.Text(NSLOCTEXT("ParametersTab","StaticSwitchText", "Static Switch"))
+			]
+			+SHorizontalBox::Slot()
+			.FillWidth(1.0f)
+			.Padding(LayoutPadding)
+			[
+				SNew(STextBlock)
+				.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+				.Text(NSLOCTEXT("ParametersTab","TexturePathText", "Texture"))
+			]
+			+SHorizontalBox::Slot()
+			.FillWidth(1.0f)
+			.Padding(LayoutPadding)
+			[
+				SNew(STextBlock)
+				.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+				.Text(NSLOCTEXT("ParametersTab","ScalarText", "Scalar"))
+			];
 }
 
 void FMIFinderModule::PluginButtonClicked()

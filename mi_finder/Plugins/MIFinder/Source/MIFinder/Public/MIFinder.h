@@ -6,6 +6,8 @@
 
 class FToolBarBuilder;
 class FMenuBuilder;
+class SHorizontalBox;
+class SDockTab;
 
 class FMIFinderModule : public IModuleInterface
 {
@@ -19,14 +21,17 @@ public:
 	void PluginButtonClicked();
 	
 private:
-
 	void RegisterMenus();
-
-	TSharedRef<class SDockTab> OnSpawnPluginTab(const class FSpawnTabArgs& SpawnTabArgs);
-
-private:
-	TSharedPtr<class FUICommandList> PluginCommands;
-
-private:
+	TSharedRef<SDockTab> OnSpawnPluginTab(const class FSpawnTabArgs& SpawnTabArgs);
+	TSharedRef<SHorizontalBox> BuildRootMaterialBox();
+	TSharedRef<SHorizontalBox> BuildSelectLayerFunctionBox();
+	TSharedRef<SHorizontalBox> BuildParametersBox();
 	
+private:
+	TSharedPtr<FUICommandList> PluginCommands;
+
+private:
+	static constexpr float LayoutPadding = 2.5f;
+	static constexpr float FontSize = 12.0f;
+	static constexpr float EditableTextBoxHeight = FontSize + 12.0f;
 };
