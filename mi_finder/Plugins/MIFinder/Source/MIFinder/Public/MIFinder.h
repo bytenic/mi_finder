@@ -11,6 +11,7 @@ class SDockTab;
 class UMaterialInterface;
 class UMaterialFunctionMaterialLayer;
 class UMaterialFunctionMaterialLayerBlend;
+class SScrollBox;
 
 class FMIFinderModule : public IModuleInterface
 {
@@ -32,6 +33,8 @@ private:
 	void OnRootMaterialChanged(const FAssetData & InAssetData);
 	void OnRootMaterialLayerChanged(const FAssetData & InAssetData);
 	void OnRootMaterialBlendChanged(const FAssetData & InAssetData);
+
+	void BuildStaticSwitchBox();
 	
 private:
 	TSharedPtr<FUICommandList> PluginCommands;
@@ -42,6 +45,11 @@ private:
 	TObjectPtr<UMaterialFunctionMaterialLayer> MaterialLayerAsset{};
 	UPROPERTY()
 	TObjectPtr<UMaterialFunctionMaterialLayerBlend> MaterialBlendAsset{};	
+
+	
+	TSharedPtr<SScrollBox> StaticSwitchScrollBox{};
+	TSharedPtr<SVerticalBox> StaticSwitchInnerBox{};
+
 	
 private:
 	static constexpr float LayoutPadding = 2.5f;

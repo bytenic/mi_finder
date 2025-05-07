@@ -21,6 +21,10 @@
 		{
 			"Name": "LiveUpdateForSlate",
 			"Enabled": true
+		},
+		{
+			"Name": "SlateInsights",
+			"Enabled": true
 		}
 	]
 }

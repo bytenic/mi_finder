@@ -64,7 +64,7 @@ TSharedRef<SDockTab> FMIFinderModule::OnSpawnPluginTab(const FSpawnTabArgs& Spaw
 		FText::FromString(TEXT("MIFinder.cpp"))
 		);
 
-	return SNew(SDockTab)
+	auto MainWidget =  SNew(SDockTab)
 		.TabRole(ETabRole::NomadTab)
 		[
 			SNew(SBox)
@@ -74,6 +74,7 @@ TSharedRef<SDockTab> FMIFinderModule::OnSpawnPluginTab(const FSpawnTabArgs& Spaw
 				SNew(SVerticalBox)
 				+SVerticalBox::Slot()
 				.Padding(LayoutPadding)
+				.AutoHeight()
 				[
 					BuildRootMaterialBox()
 				]
@@ -83,12 +84,20 @@ TSharedRef<SDockTab> FMIFinderModule::OnSpawnPluginTab(const FSpawnTabArgs& Spaw
 					BuildSelectLayerFunctionBox()
 				]
 				+ SVerticalBox::Slot()
-				.AutoHeight()
+				.FillHeight(1.0)
 				[
-					BuildParametersBox()
+					//SNew(SBox)
+					//.WidthOverride(800)
+					//.HeightOverride(600)
+					//[
+						BuildParametersBox()
+					//]
+					
 				]
 			]
 		];
+	BuildStaticSwitchBox();
+	return MainWidget;
 }
 
 TSharedRef<SHorizontalBox> FMIFinderModule::BuildRootMaterialBox()
@@ -216,14 +225,34 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildSelectLayerFunctionBox()
 
 TSharedRef<SHorizontalBox> FMIFinderModule::BuildParametersBox()
 {
-	return SNew(SHorizontalBox)
+	
+	
+	auto ret = SNew(SHorizontalBox)
 			+SHorizontalBox::Slot()
 			.Padding(LayoutPadding)
 			.FillWidth(1.0f)
+			.VAlign(VAlign_Top)
 			[
-				SNew(STextBlock)
-				.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
-				.Text(NSLOCTEXT("ParametersTab","StaticSwitchText", "Static Switch"))
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot()
+				.Padding(LayoutPadding)
+				.AutoHeight()
+				[
+					SNew(STextBlock)
+					.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+					.Text(NSLOCTEXT("ParametersTab","StaticSwitchText", "Static Switch"))
+				]
+				+ SVerticalBox::Slot()
+				.Padding(LayoutPadding)
+				.FillHeight(1.0f)
+				[
+					SAssignNew(StaticSwitchScrollBox, SScrollBox)
+					.Orientation(Orient_Vertical)
+					 + SScrollBox::Slot()
+					 [
+					 	SAssignNew(StaticSwitchInnerBox, SVerticalBox)
+					 ]
+				]
 			]
 			+SHorizontalBox::Slot()
 			.FillWidth(1.0f)
@@ -241,6 +270,24 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildParametersBox()
 				.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
 				.Text(NSLOCTEXT("ParametersTab","ScalarText", "Scalar"))
 			];
+	return ret;
+}
+
+void FMIFinderModule::BuildStaticSwitchBox()
+{
+	if(!StaticSwitchInnerBox.IsValid())
+		return;
+
+	StaticSwitchInnerBox->ClearChildren();
+	for(int i = 0 ; i< 300; i++)
+	{
+		StaticSwitchInnerBox->AddSlot()
+		.AutoHeight()
+		[
+			SNew(STextBlock)
+			.Text(NSLOCTEXT("StaticSwitchTab","Test", "Test"))
+		];
+	}
 }
 
 void FMIFinderModule::OnRootMaterialChanged(const FAssetData& InAssetData)
@@ -266,6 +313,8 @@ void FMIFinderModule::OnRootMaterialBlendChanged(const FAssetData& InAssetData)
 		MaterialBlendAsset = MaterialBlend;
 	}
 }
+
+
 
 void FMIFinderModule::PluginButtonClicked()
 {
