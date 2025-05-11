@@ -3,7 +3,7 @@
 #include "MIFinder.h"
 #include "MIFinderStyle.h"
 #include "MIFinderCommands.h"
-#include "LevelEditor.h"
+#include "MIFinderWidget.h"
 #include "PropertyCustomizationHelpers.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "Widgets/Layout/SBox.h"
@@ -16,45 +16,6 @@
 static const FName MIFinderTabName("MIFinder");
 
 #define LOCTEXT_NAMESPACE "FMIFinderModule"
-
-void SStaticSwitchParameterWidget::Construct(const FArguments& InArgs)
-{
-	if(!InArgs._InItem)
-	{
-		return;
-	}
-	WidgetData = InArgs._InItem;
-
-	ChildSlot
-	[
-		SNew(SHorizontalBox)
-		+ SHorizontalBox::Slot()
-		.Padding(LayoutPadding)
-		.FillWidth(.5f)
-		.HAlign(HAlign_Left)
-		[
-		   SNew(SCheckBox)
-		]
-		+ SHorizontalBox::Slot()
-		.Padding(LayoutPadding)
-		.FillWidth(3.0f)
-		.HAlign(HAlign_Left)
-		[
-			SNew(STextBlock)
-			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
-			.Text(NSLOCTEXT("StaticSwitchParameterRegion","StaticSwitchParameterName", "WidgetName"))
-		]
-		+ SHorizontalBox::Slot()
-		.Padding(LayoutPadding)
-		.FillWidth(.5f)
-		.HAlign(HAlign_Left)
-		[
-			SNew(SCheckBox)
-		]
-	];
-}
-
-
 
 void FMIFinderModule::StartupModule()
 {
