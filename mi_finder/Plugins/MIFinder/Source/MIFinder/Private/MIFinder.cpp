@@ -17,6 +17,45 @@ static const FName MIFinderTabName("MIFinder");
 
 #define LOCTEXT_NAMESPACE "FMIFinderModule"
 
+void SStaticSwitchParameterWidget::Construct(const FArguments& InArgs)
+{
+	if(!InArgs._InItem)
+	{
+		return;
+	}
+	WidgetData = InArgs._InItem;
+
+	ChildSlot
+	[
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.Padding(LayoutPadding)
+		.FillWidth(.5f)
+		.HAlign(HAlign_Left)
+		[
+		   SNew(SCheckBox)
+		]
+		+ SHorizontalBox::Slot()
+		.Padding(LayoutPadding)
+		.FillWidth(3.0f)
+		.HAlign(HAlign_Left)
+		[
+			SNew(STextBlock)
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+			.Text(NSLOCTEXT("StaticSwitchParameterRegion","StaticSwitchParameterName", "WidgetName"))
+		]
+		+ SHorizontalBox::Slot()
+		.Padding(LayoutPadding)
+		.FillWidth(.5f)
+		.HAlign(HAlign_Left)
+		[
+			SNew(SCheckBox)
+		]
+	];
+}
+
+
+
 void FMIFinderModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
@@ -86,13 +125,7 @@ TSharedRef<SDockTab> FMIFinderModule::OnSpawnPluginTab(const FSpawnTabArgs& Spaw
 				+ SVerticalBox::Slot()
 				.FillHeight(1.0)
 				[
-					//SNew(SBox)
-					//.WidthOverride(800)
-					//.HeightOverride(600)
-					//[
-						BuildParametersBox()
-					//]
-					
+					BuildParametersBox()
 				]
 			]
 		];
@@ -244,6 +277,12 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildParametersBox()
 				]
 				+ SVerticalBox::Slot()
 				.Padding(LayoutPadding)
+				.AutoHeight()
+				[
+					BuildStaticSwitchParameterHeader()
+				]
+				+ SVerticalBox::Slot()
+				.Padding(LayoutPadding)
 				.FillHeight(1.0f)
 				[
 					SAssignNew(StaticSwitchScrollBox, SScrollBox)
@@ -283,9 +322,10 @@ void FMIFinderModule::BuildStaticSwitchBox()
 	{
 		StaticSwitchInnerBox->AddSlot()
 		.AutoHeight()
+		.Padding(LayoutPadding)
 		[
-			SNew(STextBlock)
-			.Text(NSLOCTEXT("StaticSwitchTab","Test", "Test"))
+			SNew(SStaticSwitchParameterWidget)
+			.InItem(MakeShareable<StaticSwitchParameterDataObject>(new StaticSwitchParameterDataObject()))
 		];
 	}
 }
@@ -314,6 +354,37 @@ void FMIFinderModule::OnRootMaterialBlendChanged(const FAssetData& InAssetData)
 	}
 }
 
+TSharedRef<SHorizontalBox> FMIFinderModule::BuildStaticSwitchParameterHeader()
+{
+	return SNew(SHorizontalBox)
+	+ SHorizontalBox::Slot()
+	.Padding(LayoutPadding)
+	.HAlign(HAlign_Left)
+	.FillWidth(.5f)
+	[
+		SNew(STextBlock)
+		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+		.Text(NSLOCTEXT("StaticSwitchParameterHeader","IsEnable", "Active"))
+	]
+	+ SHorizontalBox::Slot()
+	.Padding(LayoutPadding)
+	.HAlign(HAlign_Left)
+	.FillWidth(3.0f)
+	[
+		SNew(STextBlock)
+		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+		.Text(NSLOCTEXT("StaticSwitchParameterHeader","ParameterName", "Name"))
+	]
+	+ SHorizontalBox::Slot()
+	.Padding(LayoutPadding)
+	.HAlign(HAlign_Left)
+	.FillWidth(.5f)
+	[
+		SNew(STextBlock)
+		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+		.Text(NSLOCTEXT("StaticSwitchParameterHeader","Condition", "Condition"))
+	];
+}
 
 
 void FMIFinderModule::PluginButtonClicked()

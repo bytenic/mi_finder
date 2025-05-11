@@ -13,10 +13,32 @@ class UMaterialFunctionMaterialLayer;
 class UMaterialFunctionMaterialLayerBlend;
 class SScrollBox;
 
+struct StaticSwitchParameterDataObject
+{
+	FString ParameterName{TEXT("None")};
+	bool QueryCondition{false};
+	bool IsEqualQuery{true};
+};
+
+class SStaticSwitchParameterWidget : public SCompoundWidget
+{
+public:
+	SLATE_BEGIN_ARGS(SStaticSwitchParameterWidget){}
+		SLATE_ARGUMENT(TSharedPtr<StaticSwitchParameterDataObject>, InItem)
+	SLATE_END_ARGS()
+
+	void Construct(const FArguments& InArgs);
+
+private:
+	TSharedPtr<StaticSwitchParameterDataObject> WidgetData{};
+
+	static constexpr float LayoutPadding = 2.5f;
+	static constexpr float FontSize = 12.0f;
+};
+
 class FMIFinderModule : public IModuleInterface
 {
 public:
-
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
@@ -34,6 +56,8 @@ private:
 	void OnRootMaterialLayerChanged(const FAssetData & InAssetData);
 	void OnRootMaterialBlendChanged(const FAssetData & InAssetData);
 
+	TSharedRef<SHorizontalBox> BuildStaticSwitchParameterHeader();
+	
 	void BuildStaticSwitchBox();
 	
 private:
@@ -45,12 +69,10 @@ private:
 	TObjectPtr<UMaterialFunctionMaterialLayer> MaterialLayerAsset{};
 	UPROPERTY()
 	TObjectPtr<UMaterialFunctionMaterialLayerBlend> MaterialBlendAsset{};	
-
 	
 	TSharedPtr<SScrollBox> StaticSwitchScrollBox{};
 	TSharedPtr<SVerticalBox> StaticSwitchInnerBox{};
 
-	
 private:
 	static constexpr float LayoutPadding = 2.5f;
 	static constexpr float FontSize = 12.0f;
