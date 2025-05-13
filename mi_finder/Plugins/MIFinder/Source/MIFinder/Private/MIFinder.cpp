@@ -91,6 +91,7 @@ TSharedRef<SDockTab> FMIFinderModule::OnSpawnPluginTab(const FSpawnTabArgs& Spaw
 			]
 		];
 	BuildStaticSwitchBox();
+	BuildTextureBox();
 	return MainWidget;
 }
 
@@ -140,11 +141,11 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildRootMaterialBox()
 				.AllowedClass(UMaterialInterface::StaticClass())
 				.ObjectPath(TAttribute<FString>::CreateLambda([this]()
 				{
-					if(!IsValid(SearchRootMaterial))
+					if(!SearchRootMaterial.IsValid())
 					{
 						return FString{};
 					}
-					return SearchRootMaterial->GetPathName();
+					return SearchRootMaterial.Get()->GetPathName();
 				}))
 				.OnObjectChanged(FOnSetObject::CreateRaw(this, &FMIFinderModule::OnRootMaterialChanged))
 		]
@@ -175,11 +176,11 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildSelectLayerFunctionBox()
 					.AllowedClass(UMaterialFunctionMaterialLayer::StaticClass())
 					.ObjectPath(TAttribute<FString>::CreateLambda([this]()
 					{
-						if(!IsValid(MaterialLayerAsset))
+						if(!MaterialLayerAsset.IsValid())
 						{
 							return FString{};
 						}
-						return MaterialLayerAsset->GetPathName();
+						return MaterialLayerAsset.Get()->GetPathName();
 					}))
 					.OnObjectChanged(FOnSetObject::CreateRaw(this, &FMIFinderModule::OnRootMaterialLayerChanged))
 				]
@@ -206,11 +207,11 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildSelectLayerFunctionBox()
 					.AllowedClass(UMaterialFunctionMaterialLayerBlend::StaticClass())
 					.ObjectPath(TAttribute<FString>::CreateLambda([this]()
 									{
-										if(!IsValid(MaterialBlendAsset))
+										if(!MaterialBlendAsset.IsValid())
 										{
 											return FString{};
 										}
-										return MaterialBlendAsset->GetPathName();
+										return MaterialBlendAsset.Get()->GetPathName();
 									}))
 									.OnObjectChanged(FOnSetObject::CreateRaw(this, &FMIFinderModule::OnRootMaterialBlendChanged))
 			]
@@ -258,9 +259,31 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildParametersBox()
 			.FillWidth(1.0f)
 			.Padding(LayoutPadding)
 			[
-				SNew(STextBlock)
-				.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
-				.Text(NSLOCTEXT("ParametersTab","TexturePathText", "Texture"))
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot()
+				.Padding(LayoutPadding)
+				.AutoHeight()
+				[
+					SNew(STextBlock).Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+					.Text(NSLOCTEXT("ParametersTab","TexturePathText", "Texture"))
+				]
+				+ SVerticalBox::Slot()
+				.Padding(LayoutPadding)
+				.AutoHeight()
+				[
+					BuildTextureParameterHeader()
+				]
+				+ SVerticalBox::Slot()
+				.Padding(LayoutPadding)
+				.FillHeight(1.0f)
+				[
+					SAssignNew(TextureParameterScrollBox, SScrollBox)
+					.Orientation(Orient_Vertical)
+					 + SScrollBox::Slot()
+					 [
+						 SAssignNew(TextureParameterInnerBox, SVerticalBox)
+					 ]
+				]
 			]
 			+SHorizontalBox::Slot()
 			.FillWidth(1.0f)
@@ -287,6 +310,24 @@ void FMIFinderModule::BuildStaticSwitchBox()
 		[
 			SNew(SStaticSwitchParameterWidget)
 			.InItem(MakeShareable<StaticSwitchParameterDataObject>(new StaticSwitchParameterDataObject()))
+		];
+	}
+}
+
+void FMIFinderModule::BuildTextureBox()
+{
+	if(!TextureParameterInnerBox.IsValid())
+		return;
+
+	TextureParameterInnerBox->ClearChildren();
+	for(int i = 0 ; i< 300; i++)
+	{
+		TextureParameterInnerBox->AddSlot()
+		.AutoHeight()
+		.Padding(LayoutPadding)
+		[
+			SNew(STextureParameterWidget)
+			.InItem(MakeShareable<TextureParameterDataObject>(new TextureParameterDataObject()))
 		];
 	}
 }
@@ -321,7 +362,7 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildStaticSwitchParameterHeader()
 	+ SHorizontalBox::Slot()
 	.Padding(LayoutPadding)
 	.HAlign(HAlign_Left)
-	.FillWidth(.5f)
+	.FillWidth(.25f)
 	[
 		SNew(STextBlock)
 		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
@@ -330,21 +371,62 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildStaticSwitchParameterHeader()
 	+ SHorizontalBox::Slot()
 	.Padding(LayoutPadding)
 	.HAlign(HAlign_Left)
-	.FillWidth(3.0f)
+	.FillWidth(2.0f)
 	[
 		SNew(STextBlock)
 		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
-		.Text(NSLOCTEXT("StaticSwitchParameterHeader","ParameterName", "Name"))
+		.Text(NSLOCTEXT("StaticSwitchParameterHeader","Name", "Name"))
 	]
 	+ SHorizontalBox::Slot()
 	.Padding(LayoutPadding)
 	.HAlign(HAlign_Left)
-	.FillWidth(.5f)
+	.FillWidth(.25f)
 	[
 		SNew(STextBlock)
 		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
 		.Text(NSLOCTEXT("StaticSwitchParameterHeader","Condition", "Condition"))
 	];
+}
+
+TSharedRef<SHorizontalBox> FMIFinderModule::BuildTextureParameterHeader()
+{
+	return SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.Padding(LayoutPadding)
+		.HAlign(HAlign_Left)
+		.FillWidth(.1f)
+		[
+			SNew(STextBlock)
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+			.Text(NSLOCTEXT("TextureParameterHeader","IsEnable", "Active"))
+		]
+		+ SHorizontalBox::Slot()
+		.Padding(LayoutPadding)
+		.HAlign(HAlign_Left)
+		.FillWidth(1.0f)
+		[
+			SNew(STextBlock)
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+			.Text(NSLOCTEXT("TextureParameterHeader","Name", "Name"))
+		]
+		+ SHorizontalBox::Slot()
+		.Padding(LayoutPadding)
+		.HAlign(HAlign_Left)
+		.FillWidth(1.0f)
+		[
+			SNew(STextBlock)
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+			.Text(NSLOCTEXT("TextureParameterHeader","Texture", "Name"))
+		]
+		+ SHorizontalBox::Slot()
+		.Padding(LayoutPadding)
+		.HAlign(HAlign_Left)
+		.FillWidth(.1f)
+		[
+			SNew(STextBlock)
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+			.Text(NSLOCTEXT("TextureParameterHeader","Condition", "Condition"))
+		];
 }
 
 

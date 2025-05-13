@@ -34,21 +34,23 @@ private:
 	void OnRootMaterialBlendChanged(const FAssetData & InAssetData);
 
 	TSharedRef<SHorizontalBox> BuildStaticSwitchParameterHeader();
+	TSharedRef<SHorizontalBox> BuildTextureParameterHeader();
 	
 	void BuildStaticSwitchBox();
+	void BuildTextureBox();
 	
 private:
 	TSharedPtr<FUICommandList> PluginCommands;
-
-	UPROPERTY()
-	TObjectPtr<UMaterialInterface> SearchRootMaterial{};
-	UPROPERTY()
-	TObjectPtr<UMaterialFunctionMaterialLayer> MaterialLayerAsset{};
-	UPROPERTY()
-	TObjectPtr<UMaterialFunctionMaterialLayerBlend> MaterialBlendAsset{};	
+	
+	TWeakObjectPtr<UMaterialInterface> SearchRootMaterial{};
+	TWeakObjectPtr<UMaterialFunctionMaterialLayer> MaterialLayerAsset{};
+	TWeakObjectPtr<UMaterialFunctionMaterialLayerBlend> MaterialBlendAsset{};	
 	
 	TSharedPtr<SScrollBox> StaticSwitchScrollBox{};
 	TSharedPtr<SVerticalBox> StaticSwitchInnerBox{};
+
+	TSharedPtr<SScrollBox> TextureParameterScrollBox{};
+	TSharedPtr<SVerticalBox> TextureParameterInnerBox{};
 
 private:
 	static constexpr float LayoutPadding = 2.5f;
