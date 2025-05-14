@@ -5,6 +5,7 @@
 
 #include "PropertyCustomizationHelpers.h"
 #include "Widgets/Input/SNumericEntryBox.h"
+#include "WidgetLayoutParam.h"
 
 #define LOCTEXT_NAMESPACE "FMIFinderModuleWindow"
 
@@ -20,24 +21,24 @@ void SStaticSwitchParameterWidget::Construct(const FArguments& InArgs)
 	[
 		SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot()
-		.Padding(LayoutPadding)
-		.FillWidth(.25f)
+		.Padding(WidgetLayoutParam::WidgetPadding)
+		.FillWidth(WidgetLayoutParam::StaticSwitchParameterRowRatioIsActive)
 		.HAlign(HAlign_Left)
 		[
 		   SNew(SCheckBox)
 		]
 		+ SHorizontalBox::Slot()
-		.Padding(LayoutPadding)
-		.FillWidth(2.0f)
+		.Padding(WidgetLayoutParam::WidgetPadding)
+		.FillWidth(WidgetLayoutParam::StaticSwitchParameterRowRatioParamName)
 		.HAlign(HAlign_Left)
 		[
 			SNew(STextBlock)
-			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
 			.Text(NSLOCTEXT("StaticSwitchParameterRegion","StaticSwitchParameterName", "WidgetName"))
 		]
 		+ SHorizontalBox::Slot()
-		.Padding(LayoutPadding)
-		.FillWidth(.25f)
+		.Padding(WidgetLayoutParam::WidgetPadding)
+		.FillWidth(WidgetLayoutParam::StaticSwitchParameterRowRatioCondition)
 		.HAlign(HAlign_Left)
 		[
 			SNew(SCheckBox)
@@ -57,24 +58,24 @@ void STextureParameterWidget::Construct(const FArguments& InArgs)
 	[
 		SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot()
-		.Padding(LayoutPadding)
-		.FillWidth(.2f)
+		.Padding(WidgetLayoutParam::WidgetPadding)
+		.FillWidth(WidgetLayoutParam::TextureParameterRowRatioIsActive)
 		.HAlign(HAlign_Left)
 		[
 		   SNew(SCheckBox)
 		]
 		+ SHorizontalBox::Slot()
-		.Padding(LayoutPadding)
-		.FillWidth(1.0f)
+		.Padding(WidgetLayoutParam::WidgetPadding)
+		.FillWidth(WidgetLayoutParam::TextureParameterRowRatioParamName)
 		.HAlign(HAlign_Left)
 		[
 			SNew(STextBlock)
-			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
 			.Text(NSLOCTEXT("TextureParameterRegion","TextureParameterName", "ParameterName"))
 		]
 		+ SHorizontalBox::Slot()
-		.Padding(LayoutPadding)
-		.FillWidth(1.f)
+		.Padding(WidgetLayoutParam::WidgetPadding)
+		.FillWidth(WidgetLayoutParam::TextureParameterRowRatioTextureName)
 		.HAlign(HAlign_Left)
 		[
 		SNew(SObjectPropertyEntryBox)
@@ -90,8 +91,8 @@ void STextureParameterWidget::Construct(const FArguments& InArgs)
 				.OnObjectChanged(FOnSetObject::CreateRaw(this, &STextureParameterWidget::OnTextureChanged))
 		]
 		+ SHorizontalBox::Slot()
-		.Padding(LayoutPadding)
-		.FillWidth(.1f)
+		.Padding(WidgetLayoutParam::WidgetPadding)
+		.FillWidth(WidgetLayoutParam::TextureParameterRowRatioCondition)
 		.HAlign(HAlign_Left)
 		[
 			SNew(SCheckBox)
@@ -115,37 +116,40 @@ void SScalarParameterWidget::Construct(const FArguments& InArgs)
 	[
 		SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot()
-		.Padding(LayoutPadding)
-		.FillWidth(.25f)
+		.Padding(WidgetLayoutParam::WidgetPadding)
+		.FillWidth(WidgetLayoutParam::ScalarParameterRowRatioIsActive)
 		.HAlign(HAlign_Left)
 		[
 		   SNew(SCheckBox)
 		]
 		+ SHorizontalBox::Slot()
-		.Padding(LayoutPadding)
-		.FillWidth(2.0f)
+		.Padding(WidgetLayoutParam::WidgetPadding)
+		.FillWidth(WidgetLayoutParam::ScalarParameterRowRatioParamName)
 		.HAlign(HAlign_Left)
 		[
 			SNew(STextBlock)
-			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
 			.Text(NSLOCTEXT("ScalarParameterRegion","StaticSwitchParameterName", "WidgetName"))
 		]
 		+ SHorizontalBox::Slot()
-		.Padding(LayoutPadding)
-		.FillWidth(2.0f)
+		.Padding(WidgetLayoutParam::WidgetPadding)
+		.FillWidth(WidgetLayoutParam::ScalarParameterRowRatioFloatValue)
 		.HAlign(HAlign_Left)
 		[
 			SNew(SNumericEntryBox<float>)
 			//.Value(this, &SPDD_TargetRow::GetScale)
 			//.OnValueChanged(this, &SPDD_TargetRow::SetScale)
 		]
-		//+ SHorizontalBox::Slot()
-		//.Padding(LayoutPadding)
-		//.FillWidth(.25f)
-		//.HAlign(HAlign_Left)
-		//[
-		//	SNew(SCheckBox)
-		//]
+		+ SHorizontalBox::Slot()
+		.Padding(WidgetLayoutParam::WidgetPadding)
+		.FillWidth(WidgetLayoutParam::ScalarParameterRowRatioConditionType)
+		.HAlign(HAlign_Left)
+		[
+			SNew(SComboBox<TSharedPtr<EScalarParameterQueryType>>)
+			//.Value(this, &SPDD_TargetRow::GetScale)
+			//.OnValueChanged(this, &SPDD_TargetRow::SetScale)
+		]
+
 	];
 }
 

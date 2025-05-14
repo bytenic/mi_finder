@@ -56,9 +56,4 @@ private:
 
 	TSharedPtr<SScrollBox> ScalarParameterScrollBox{};
 	TSharedPtr<SVerticalBox> ScalarParameterInnerBox{};
-
-private:
-	static constexpr float LayoutPadding = 2.5f;
-	static constexpr float FontSize = 12.0f;
-	static constexpr float EditableTextBoxHeight = FontSize + 12.0f;
 };

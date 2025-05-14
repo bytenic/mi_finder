@@ -22,9 +22,6 @@ void Construct(const FArguments& InArgs);
 
 private:
 	TSharedPtr<StaticSwitchParameterDataObject> WidgetData{};
-
-	static constexpr float LayoutPadding = 2.5f;
-	static constexpr float FontSize = 12.0f;
 };
 
 struct TextureParameterDataObject
@@ -49,11 +46,9 @@ private:
 private:
 	TWeakObjectPtr<UTexture2D> CurrentSelectTexture{};
 	TSharedPtr<TextureParameterDataObject> WidgetData{};
-	static constexpr float LayoutPadding = 2.5f;
-	static constexpr float FontSize = 12.0f;
 };
 
-enum EScalarParameterQueryType :uint8
+enum class EScalarParameterQueryType :uint8
 {
 	Less,
 	Equal,
@@ -79,6 +74,4 @@ void Construct(const FArguments& InArgs);
 	
 private:
 	TSharedPtr<FScalarParameterDataObject> WidgetData{};
-	static constexpr float LayoutPadding = 2.5f;
-	static constexpr float FontSize = 12.0f;
 };
