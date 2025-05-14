@@ -52,3 +52,33 @@ private:
 	static constexpr float LayoutPadding = 2.5f;
 	static constexpr float FontSize = 12.0f;
 };
+
+enum EScalarParameterQueryType :uint8
+{
+	Less,
+	Equal,
+	Greater
+};
+
+struct FScalarParameterDataObject
+{
+	FString ParameterName{TEXT("None")};
+	float QueryValue{.0f};
+	EScalarParameterQueryType QueryCondition{false};
+	bool IsActive{true};
+};
+
+class SScalarParameterWidget : public SCompoundWidget
+{
+public:
+	SLATE_BEGIN_ARGS(SScalarParameterWidget){}
+	SLATE_ARGUMENT(TSharedPtr<FScalarParameterDataObject>, InItem)
+SLATE_END_ARGS()
+
+void Construct(const FArguments& InArgs);
+	
+private:
+	TSharedPtr<FScalarParameterDataObject> WidgetData{};
+	static constexpr float LayoutPadding = 2.5f;
+	static constexpr float FontSize = 12.0f;
+};

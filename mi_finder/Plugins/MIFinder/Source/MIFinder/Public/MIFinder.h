@@ -35,9 +35,11 @@ private:
 
 	TSharedRef<SHorizontalBox> BuildStaticSwitchParameterHeader();
 	TSharedRef<SHorizontalBox> BuildTextureParameterHeader();
+	TSharedRef<SHorizontalBox> BuildScalarParameterHeader();
 	
 	void BuildStaticSwitchBox();
 	void BuildTextureBox();
+	void BuildScalarBox();
 	
 private:
 	TSharedPtr<FUICommandList> PluginCommands;
@@ -51,6 +53,9 @@ private:
 
 	TSharedPtr<SScrollBox> TextureParameterScrollBox{};
 	TSharedPtr<SVerticalBox> TextureParameterInnerBox{};
+
+	TSharedPtr<SScrollBox> ScalarParameterScrollBox{};
+	TSharedPtr<SVerticalBox> ScalarParameterInnerBox{};
 
 private:
 	static constexpr float LayoutPadding = 2.5f;

@@ -4,6 +4,7 @@
 #include "MIFinderWidget.h"
 
 #include "PropertyCustomizationHelpers.h"
+#include "Widgets/Input/SNumericEntryBox.h"
 
 #define LOCTEXT_NAMESPACE "FMIFinderModuleWindow"
 
@@ -100,6 +101,52 @@ void STextureParameterWidget::Construct(const FArguments& InArgs)
 
 void STextureParameterWidget::OnTextureChanged(const FAssetData& InAssetData)
 {
+}
+
+void SScalarParameterWidget::Construct(const FArguments& InArgs)
+{
+	if(!InArgs._InItem)
+	{
+		return;
+	}
+	WidgetData = InArgs._InItem;
+
+	ChildSlot
+	[
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.Padding(LayoutPadding)
+		.FillWidth(.25f)
+		.HAlign(HAlign_Left)
+		[
+		   SNew(SCheckBox)
+		]
+		+ SHorizontalBox::Slot()
+		.Padding(LayoutPadding)
+		.FillWidth(2.0f)
+		.HAlign(HAlign_Left)
+		[
+			SNew(STextBlock)
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+			.Text(NSLOCTEXT("ScalarParameterRegion","StaticSwitchParameterName", "WidgetName"))
+		]
+		+ SHorizontalBox::Slot()
+		.Padding(LayoutPadding)
+		.FillWidth(2.0f)
+		.HAlign(HAlign_Left)
+		[
+			SNew(SNumericEntryBox<float>)
+			//.Value(this, &SPDD_TargetRow::GetScale)
+			//.OnValueChanged(this, &SPDD_TargetRow::SetScale)
+		]
+		//+ SHorizontalBox::Slot()
+		//.Padding(LayoutPadding)
+		//.FillWidth(.25f)
+		//.HAlign(HAlign_Left)
+		//[
+		//	SNew(SCheckBox)
+		//]
+	];
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -92,6 +92,7 @@ TSharedRef<SDockTab> FMIFinderModule::OnSpawnPluginTab(const FSpawnTabArgs& Spaw
 		];
 	BuildStaticSwitchBox();
 	BuildTextureBox();
+	BuildScalarBox();
 	return MainWidget;
 }
 
@@ -220,8 +221,6 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildSelectLayerFunctionBox()
 
 TSharedRef<SHorizontalBox> FMIFinderModule::BuildParametersBox()
 {
-	
-	
 	auto ret = SNew(SHorizontalBox)
 			+SHorizontalBox::Slot()
 			.Padding(LayoutPadding)
@@ -289,9 +288,32 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildParametersBox()
 			.FillWidth(1.0f)
 			.Padding(LayoutPadding)
 			[
-				SNew(STextBlock)
-				.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
-				.Text(NSLOCTEXT("ParametersTab","ScalarText", "Scalar"))
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot()
+				.Padding(LayoutPadding)
+				.AutoHeight()
+				[
+					SNew(STextBlock)
+					.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+					.Text(NSLOCTEXT("ParametersTab","ScalarText", "Scalar"))
+				]
+				+ SVerticalBox::Slot()
+				.Padding(LayoutPadding)
+				.AutoHeight()
+				[
+					BuildScalarParameterHeader()
+				]
+				+ SVerticalBox::Slot()
+				.Padding(LayoutPadding)
+				.FillHeight(1.0f)
+				[
+					SAssignNew(ScalarParameterScrollBox, SScrollBox)
+					.Orientation(Orient_Vertical)
+					 + SScrollBox::Slot()
+					 [
+						 SAssignNew(ScalarParameterInnerBox, SVerticalBox)
+					 ]
+				]
 			];
 	return ret;
 }
@@ -328,6 +350,24 @@ void FMIFinderModule::BuildTextureBox()
 		[
 			SNew(STextureParameterWidget)
 			.InItem(MakeShareable<TextureParameterDataObject>(new TextureParameterDataObject()))
+		];
+	}
+}
+
+void FMIFinderModule::BuildScalarBox()
+{
+	if(!ScalarParameterInnerBox.IsValid())
+		return;
+
+	ScalarParameterInnerBox->ClearChildren();
+	for(int i = 0 ; i< 300; i++)
+	{
+		ScalarParameterInnerBox->AddSlot()
+		.AutoHeight()
+		.Padding(LayoutPadding)
+		[
+			SNew(SScalarParameterWidget)
+			.InItem(MakeShareable<FScalarParameterDataObject>(new FScalarParameterDataObject()))
 		];
 	}
 }
@@ -427,6 +467,47 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildTextureParameterHeader()
 			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
 			.Text(NSLOCTEXT("TextureParameterHeader","Condition", "Condition"))
 		];
+}
+
+TSharedRef<SHorizontalBox> FMIFinderModule::BuildScalarParameterHeader()
+{
+	return SNew(SHorizontalBox)
+	+ SHorizontalBox::Slot()
+	.Padding(LayoutPadding)
+	.HAlign(HAlign_Left)
+	.FillWidth(.1f)
+	[
+		SNew(STextBlock)
+		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+		.Text(NSLOCTEXT("ScalarParameterHeader","IsEnable", "Active"))
+	]
+	+ SHorizontalBox::Slot()
+	.Padding(LayoutPadding)
+	.HAlign(HAlign_Left)
+	.FillWidth(1.0f)
+	[
+		SNew(STextBlock)
+		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+		.Text(NSLOCTEXT("ScalarParameterHeader","Name", "Name"))
+	]
+	+ SHorizontalBox::Slot()
+	.Padding(LayoutPadding)
+	.HAlign(HAlign_Left)
+	.FillWidth(.5f)
+	[
+		SNew(STextBlock)
+		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+		.Text(NSLOCTEXT("ScalarParameterHeader","Value", "Name"))
+	]
+	+ SHorizontalBox::Slot()
+	.Padding(LayoutPadding)
+	.HAlign(HAlign_Left)
+	.FillWidth(.1f)
+	[
+		SNew(STextBlock)
+		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),FontSize))
+		.Text(NSLOCTEXT("TextureParameterHeader","Condition", "Type"))
+	];
 }
 
 
