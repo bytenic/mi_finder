@@ -33,7 +33,7 @@ void SStaticSwitchParameterWidget::Construct(const FArguments& InArgs)
 		.HAlign(HAlign_Left)
 		[
 			SNew(STextBlock)
-			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
 			.Text(NSLOCTEXT("StaticSwitchParameterRegion","StaticSwitchParameterName", "WidgetName"))
 		]
 		+ SHorizontalBox::Slot()
@@ -70,7 +70,7 @@ void STextureParameterWidget::Construct(const FArguments& InArgs)
 		.HAlign(HAlign_Left)
 		[
 			SNew(STextBlock)
-			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
 			.Text(NSLOCTEXT("TextureParameterRegion","TextureParameterName", "ParameterName"))
 		]
 		+ SHorizontalBox::Slot()
@@ -128,7 +128,7 @@ void SScalarParameterWidget::Construct(const FArguments& InArgs)
 		.HAlign(HAlign_Left)
 		[
 			SNew(STextBlock)
-			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
 			.Text(NSLOCTEXT("ScalarParameterRegion","StaticSwitchParameterName", "WidgetName"))
 		]
 		+ SHorizontalBox::Slot()

@@ -3,7 +3,7 @@
 #include "MIFinder.h"
 #include "MIFinderStyle.h"
 #include "MIFinderCommands.h"
-#include "MIFinderWidget.h"
+
 #include "PropertyCustomizationHelpers.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "Widgets/Layout/SBox.h"
@@ -109,7 +109,7 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildRootMaterialBox()
 		.Padding(WidgetLayoutParam::WidgetPadding)
 		[
 			SNew(STextBlock)
-			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::ParameterTextFontSize))
 			.Text(NSLOCTEXT("AssetSearchTab","SearchRootText", "SearchRootPath"))
 		]
 		+SVerticalBox::Slot()
@@ -119,7 +119,7 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildRootMaterialBox()
 			.HeightOverride(WidgetLayoutParam::EditableTextBoxHeight)
 			[
 				SNew(SEditableTextBox)
-				.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
+				.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::ParameterTextFontSize))
 				.Text(NSLOCTEXT("AssetSearchTab","SearchRootTextBox", "/Game"))
 			]
 		]
@@ -133,7 +133,7 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildRootMaterialBox()
 		.Padding(WidgetLayoutParam::WidgetPadding)
 		[
 			SNew(STextBlock)
-			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::ParameterTextFontSize))
 			.Text(NSLOCTEXT("AssetSearchTab","RootMaterialText", "Root Material"))
 		]
 		+SVerticalBox::Slot()
@@ -167,7 +167,7 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildSelectLayerFunctionBox()
 				.Padding(WidgetLayoutParam::WidgetPadding)
 				[
 					SNew(STextBlock)
-					.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
+					.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::ParameterTextFontSize))
 					.Text(NSLOCTEXT("FunctionsSelectTab","MateriallayerText", "Material Layer"))
 				]
 				+SVerticalBox::Slot()
@@ -198,7 +198,7 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildSelectLayerFunctionBox()
 				.Padding(WidgetLayoutParam::WidgetPadding)
 				[
 					SNew(STextBlock)
-					.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
+					.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::ParameterTextFontSize))
 					.Text(NSLOCTEXT("FunctionsSelectTab","MaterialBlendText", "Material Blend"))
 				]
 				+SVerticalBox::Slot()
@@ -234,7 +234,7 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildParametersBox()
 				.AutoHeight()
 				[
 					SNew(STextBlock)
-					.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
+					.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::ParameterTextFontSize))
 					.Text(NSLOCTEXT("ParametersTab","StaticSwitchText", "Static Switch"))
 				]
 				+ SVerticalBox::Slot()
@@ -264,7 +264,7 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildParametersBox()
 				.Padding(WidgetLayoutParam::WidgetPadding)
 				.AutoHeight()
 				[
-					SNew(STextBlock).Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
+					SNew(STextBlock).Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::ParameterTextFontSize))
 					.Text(NSLOCTEXT("ParametersTab","TexturePathText", "Texture"))
 				]
 				+ SVerticalBox::Slot()
@@ -295,7 +295,7 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildParametersBox()
 				.AutoHeight()
 				[
 					SNew(STextBlock)
-					.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
+					.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::ParameterTextFontSize))
 					.Text(NSLOCTEXT("ParametersTab","ScalarText", "Scalar"))
 				]
 				+ SVerticalBox::Slot()
@@ -375,9 +375,9 @@ void FMIFinderModule::BuildScalarBox()
 
 void FMIFinderModule::OnRootMaterialChanged(const FAssetData& InAssetData)
 {
-	if(auto MaterialInterface = Cast<UMaterialInstance>(InAssetData.GetAsset()))
+	if(const auto Material = Cast<UMaterial>(InAssetData.GetAsset()))
 	{
-		SearchRootMaterial = MaterialInterface;
+		SearchRootMaterial = Material;
 	}
 }
 
@@ -406,8 +406,8 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildStaticSwitchParameterHeader()
 	.FillWidth(WidgetLayoutParam::StaticSwitchParameterRowRatioIsActive)
 	[
 		SNew(STextBlock)
-		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
-		.Text(NSLOCTEXT("StaticSwitchParameterHeader","IsEnable", "Active"))
+		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
+		.Text(NSLOCTEXT("StaticSwitchParameterHeader","IsEnable", "Valid"))
 	]
 	+ SHorizontalBox::Slot()
 	.Padding(WidgetLayoutParam::WidgetPadding)
@@ -415,7 +415,7 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildStaticSwitchParameterHeader()
 	.FillWidth(WidgetLayoutParam::StaticSwitchParameterRowRatioParamName)
 	[
 		SNew(STextBlock)
-		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
+		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
 		.Text(NSLOCTEXT("StaticSwitchParameterHeader","Name", "Name"))
 	]
 	+ SHorizontalBox::Slot()
@@ -424,8 +424,8 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildStaticSwitchParameterHeader()
 	.FillWidth(WidgetLayoutParam::StaticSwitchParameterRowRatioCondition)
 	[
 		SNew(STextBlock)
-		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
-		.Text(NSLOCTEXT("StaticSwitchParameterHeader","Condition", "Condition"))
+		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
+		.Text(NSLOCTEXT("StaticSwitchParameterHeader","Condition", "Cond"))
 	];
 }
 
@@ -438,8 +438,8 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildTextureParameterHeader()
 		.FillWidth(WidgetLayoutParam::TextureParameterRowRatioIsActive)
 		[
 			SNew(STextBlock)
-			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
-			.Text(NSLOCTEXT("TextureParameterHeader","IsEnable", "Active"))
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
+			.Text(NSLOCTEXT("TextureParameterHeader","IsEnable", "Valid"))
 		]
 		+ SHorizontalBox::Slot()
 		.Padding(WidgetLayoutParam::WidgetPadding)
@@ -447,7 +447,7 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildTextureParameterHeader()
 		.FillWidth(WidgetLayoutParam::TextureParameterRowRatioParamName)
 		[
 			SNew(STextBlock)
-			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
 			.Text(NSLOCTEXT("TextureParameterHeader","Name", "Name"))
 		]
 		+ SHorizontalBox::Slot()
@@ -456,7 +456,7 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildTextureParameterHeader()
 		.FillWidth(WidgetLayoutParam::TextureParameterRowRatioTextureName)
 		[
 			SNew(STextBlock)
-			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
 			.Text(NSLOCTEXT("TextureParameterHeader","Texture", "Name"))
 		]
 		+ SHorizontalBox::Slot()
@@ -465,8 +465,8 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildTextureParameterHeader()
 		.FillWidth(WidgetLayoutParam::TextureParameterRowRatioCondition)
 		[
 			SNew(STextBlock)
-			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
-			.Text(NSLOCTEXT("TextureParameterHeader","Condition", "Condition"))
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
+			.Text(NSLOCTEXT("TextureParameterHeader","Condition", "Cond"))
 		];
 }
 
@@ -479,8 +479,8 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildScalarParameterHeader()
 	.FillWidth(WidgetLayoutParam::ScalarParameterRowRatioIsActive)
 	[
 		SNew(STextBlock)
-		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
-		.Text(NSLOCTEXT("ScalarParameterHeader","IsEnable", "Active"))
+		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
+		.Text(NSLOCTEXT("ScalarParameterHeader","IsEnable", "Valid"))
 	]
 	+ SHorizontalBox::Slot()
 	.Padding(WidgetLayoutParam::WidgetPadding)
@@ -488,7 +488,7 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildScalarParameterHeader()
 	.FillWidth(WidgetLayoutParam::ScalarParameterRowRatioParamName)
 	[
 		SNew(STextBlock)
-		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
+		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
 		.Text(NSLOCTEXT("ScalarParameterHeader","Name", "Name"))
 	]
 	+ SHorizontalBox::Slot()
@@ -497,7 +497,7 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildScalarParameterHeader()
 	.FillWidth(WidgetLayoutParam::ScalarParameterRowRatioConditionType)
 	[
 		SNew(STextBlock)
-		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
+		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
 		.Text(NSLOCTEXT("ScalarParameterHeader","ScalarValue", "Value"))
 	]
 	+ SHorizontalBox::Slot()
@@ -506,7 +506,7 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildScalarParameterHeader()
 	.FillWidth(WidgetLayoutParam::ScalarParameterRowRatioConditionType)
 	[
 		SNew(STextBlock)
-		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::TextFontSize))
+		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
 		.Text(NSLOCTEXT("ScalarParameterHeader","Condition", "Type"))
 	];
 }

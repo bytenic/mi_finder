@@ -3,12 +3,13 @@
 #pragma once
 
 #include "Modules/ModuleManager.h"
+#include "MIFinderWidget.h"
 
 class FToolBarBuilder;
 class FMenuBuilder;
 class SHorizontalBox;
 class SDockTab;
-class UMaterialInterface;
+class UMaterial;
 class UMaterialFunctionMaterialLayer;
 class UMaterialFunctionMaterialLayerBlend;
 class SScrollBox;
@@ -44,7 +45,7 @@ private:
 private:
 	TSharedPtr<FUICommandList> PluginCommands;
 	
-	TWeakObjectPtr<UMaterialInterface> SearchRootMaterial{};
+	TWeakObjectPtr<UMaterial> SearchRootMaterial{};
 	TWeakObjectPtr<UMaterialFunctionMaterialLayer> MaterialLayerAsset{};
 	TWeakObjectPtr<UMaterialFunctionMaterialLayerBlend> MaterialBlendAsset{};	
 	
