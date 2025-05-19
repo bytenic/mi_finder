@@ -16,6 +16,19 @@ class SScrollBox;
 
 class FMIFinderModule : public IModuleInterface
 {
+public :
+	struct MaterialParameterWrapper
+	{
+		TArray<TSharedPtr<StaticSwitchParameterDataObject>> StaticSwitchParameters{};
+		TArray<TSharedPtr<TextureParameterDataObject>> TextureParameters{};
+		TArray<TSharedPtr<FScalarParameterDataObject>> ScalarParameters{};
+
+		MaterialParameterWrapper();
+		~MaterialParameterWrapper() = default;
+		void ClearAll();
+		void BuildParameterFormMaterial(const UMaterial* Material);
+	};
+	
 public:
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
@@ -37,6 +50,9 @@ private:
 	TSharedRef<SHorizontalBox> BuildStaticSwitchParameterHeader();
 	TSharedRef<SHorizontalBox> BuildTextureParameterHeader();
 	TSharedRef<SHorizontalBox> BuildScalarParameterHeader();
+
+	void ClearAllParameterWidget();
+	void BuildParameterWidget();
 	
 	void BuildStaticSwitchBox();
 	void BuildTextureBox();
@@ -57,4 +73,6 @@ private:
 
 	TSharedPtr<SScrollBox> ScalarParameterScrollBox{};
 	TSharedPtr<SVerticalBox> ScalarParameterInnerBox{};
+
+	MaterialParameterWrapper MaterialParameters{};
 };

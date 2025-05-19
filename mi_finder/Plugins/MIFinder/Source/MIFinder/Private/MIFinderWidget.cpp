@@ -9,6 +9,11 @@
 
 #define LOCTEXT_NAMESPACE "FMIFinderModuleWindow"
 
+StaticSwitchParameterDataObject::StaticSwitchParameterDataObject(const FString& ParamName,EMaterialParameterAssociation Association, bool IsEqualQuery, bool IsActive)
+	: ParameterName(ParamName), Association(Association), IsEqualQuery(IsEqualQuery), IsActive(IsActive)
+{
+}
+
 void SStaticSwitchParameterWidget::Construct(const FArguments& InArgs)
 {
 	if(!InArgs._InItem)
@@ -44,6 +49,14 @@ void SStaticSwitchParameterWidget::Construct(const FArguments& InArgs)
 			SNew(SCheckBox)
 		]
 	];
+}
+
+TextureParameterDataObject::TextureParameterDataObject(
+	const FString& ParameterName,
+	const FString& TexturePathName,
+	EMaterialParameterAssociation Association, bool IsEqualQuery, bool IsActive)
+		:ParameterName(ParameterName), TexturePathName(TexturePathName), Association(Association), IsEqualQuery(IsEqualQuery), IsActive(IsActive)
+{
 }
 
 void STextureParameterWidget::Construct(const FArguments& InArgs)
@@ -101,6 +114,12 @@ void STextureParameterWidget::Construct(const FArguments& InArgs)
 }
 
 void STextureParameterWidget::OnTextureChanged(const FAssetData& InAssetData)
+{
+}
+
+FScalarParameterDataObject::FScalarParameterDataObject(const FString& ParamName, float Value,
+	EMaterialParameterAssociation Association, EScalarParameterQueryType QueryType, bool IsActive)
+		: ParameterName(ParamName), QueryValue(Value), Association(Association), QueryType(QueryType), IsActive(IsActive)
 {
 }
 

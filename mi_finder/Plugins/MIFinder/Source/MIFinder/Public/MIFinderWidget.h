@@ -7,8 +7,12 @@
 struct StaticSwitchParameterDataObject
 {
 	FString ParameterName{TEXT("None")};
-	bool QueryCondition{false};
-	bool IsActive{true};
+	EMaterialParameterAssociation Association{EMaterialParameterAssociation::GlobalParameter};
+	bool IsEqualQuery{false};
+	bool IsActive{false};
+	
+	StaticSwitchParameterDataObject() = default;
+	StaticSwitchParameterDataObject(const FString& ParamName, EMaterialParameterAssociation Association, bool IsEqualQuery, bool IsActive);
 };
 
 class SStaticSwitchParameterWidget : public SCompoundWidget
@@ -26,9 +30,14 @@ private:
 
 struct TextureParameterDataObject
 {
-	FString TexturePath{};
+	FString ParameterName{TEXT("None")};
+	FString TexturePathName{};
+	EMaterialParameterAssociation Association{EMaterialParameterAssociation::GlobalParameter};
 	bool IsEqualQuery{true};
 	bool IsActive{false};
+
+	TextureParameterDataObject() = default;
+	TextureParameterDataObject(const FString& ParameterName, const FString& TexturePathName, EMaterialParameterAssociation Association, bool IsEqualQuery, bool IsActive);
 };
 
 class STextureParameterWidget : public SCompoundWidget
@@ -50,17 +59,21 @@ private:
 
 enum class EScalarParameterQueryType :uint8
 {
-	Less,
+	Less, //未満
 	Equal,
-	Greater
+	Greater //超過
 };
 
 struct FScalarParameterDataObject
 {
 	FString ParameterName{TEXT("None")};
 	float QueryValue{.0f};
-	EScalarParameterQueryType QueryCondition{false};
+	EMaterialParameterAssociation Association{EMaterialParameterAssociation::GlobalParameter};
+	EScalarParameterQueryType QueryType{EScalarParameterQueryType::Equal};
 	bool IsActive{true};
+	
+	FScalarParameterDataObject() = default;
+	FScalarParameterDataObject(const FString& ParamName, float Value, EMaterialParameterAssociation Association, EScalarParameterQueryType QueryType, bool IsActive);
 };
 
 class SScalarParameterWidget : public SCompoundWidget

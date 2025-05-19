@@ -18,6 +18,69 @@ static const FName MIFinderTabName("MIFinder");
 
 #define LOCTEXT_NAMESPACE "FMIFinderModule"
 
+FMIFinderModule::MaterialParameterWrapper::MaterialParameterWrapper()
+{
+	constexpr int32 DefaultSize = 64;
+	StaticSwitchParameters.Reserve(DefaultSize);
+	TextureParameters.Reserve(DefaultSize);
+	ScalarParameters.Reserve(DefaultSize);
+}
+
+void FMIFinderModule::MaterialParameterWrapper::ClearAll()
+{
+	
+	StaticSwitchParameters.Empty();
+	TextureParameters.Empty();
+	ScalarParameters.Empty();
+}
+
+void FMIFinderModule::MaterialParameterWrapper::BuildParameterFormMaterial(const UMaterial* Material)
+{
+	TArray<FMaterialParameterInfo> ParameterInfos;
+	TArray<FGuid> ParameterIds;
+
+	Material->GetAllStaticSwitchParameterInfo(ParameterInfos, ParameterIds);
+	for (const FMaterialParameterInfo& Info : ParameterInfos)
+	{
+		FGuid Guid;
+		bool Value;
+		if(Material->GetStaticSwitchParameterValue(Info, Value, Guid))
+		{
+			StaticSwitchParameters.Add(MakeShared<StaticSwitchParameterDataObject>(Info.Name.ToString(), Info.Association, true, false));
+		}
+		
+	}
+	// --- Texture Parameters ---
+	ParameterInfos.Reset();
+	ParameterIds.Reset();
+
+	Material->GetAllTextureParameterInfo(ParameterInfos, ParameterIds);
+
+	for (const FMaterialParameterInfo& Info : ParameterInfos)
+	{
+		UTexture* Texture = nullptr;
+		if (Material->GetTextureParameterValue(Info, Texture))
+		{
+			TextureParameters.Add(MakeShared<TextureParameterDataObject>(Info.Name.ToString(),Texture->GetPathName(), Info.Association, true,false));
+		}
+	}
+
+	// --- Scalar Parameters ---
+	ParameterInfos.Reset();
+	ParameterIds.Reset();
+
+	Material->GetAllScalarParameterInfo(ParameterInfos, ParameterIds);
+
+	for (const FMaterialParameterInfo& Info : ParameterInfos)
+	{
+		float Value = 0.0f;
+		if (Material->GetScalarParameterValue(Info, Value))
+		{
+			ScalarParameters.Add(MakeShared<FScalarParameterDataObject>(Info.Name.ToString(),Value, Info.Association, EScalarParameterQueryType::Equal, false));
+		}
+	}
+}
+
 void FMIFinderModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
@@ -43,17 +106,10 @@ void FMIFinderModule::StartupModule()
 
 void FMIFinderModule::ShutdownModule()
 {
-	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
-	// we call this function before unloading the module.
-
 	UToolMenus::UnRegisterStartupCallback(this);
-
 	UToolMenus::UnregisterOwner(this);
-
 	FMIFinderStyle::Shutdown();
-
 	FMIFinderCommands::Unregister();
-
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(MIFinderTabName);
 }
 
@@ -91,9 +147,9 @@ TSharedRef<SDockTab> FMIFinderModule::OnSpawnPluginTab(const FSpawnTabArgs& Spaw
 				]
 			]
 		];
-	BuildStaticSwitchBox();
-	BuildTextureBox();
-	BuildScalarBox();
+	//BuildStaticSwitchBox();
+	//BuildTextureBox();
+	//BuildScalarBox();
 	return MainWidget;
 }
 
@@ -140,7 +196,7 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildRootMaterialBox()
 		.Padding(WidgetLayoutParam::WidgetPadding)
 		[
 			SNew(SObjectPropertyEntryBox)
-				.AllowedClass(UMaterialInterface::StaticClass())
+				.AllowedClass(UMaterial::StaticClass())
 				.ObjectPath(TAttribute<FString>::CreateLambda([this]()
 				{
 					if(!SearchRootMaterial.IsValid())
@@ -378,7 +434,17 @@ void FMIFinderModule::OnRootMaterialChanged(const FAssetData& InAssetData)
 	if(const auto Material = Cast<UMaterial>(InAssetData.GetAsset()))
 	{
 		SearchRootMaterial = Material;
+		ClearAllParameterWidget();
+		MaterialParameters.ClearAll();
+		MaterialParameters.BuildParameterFormMaterial(Material);
 	}
+	else
+	{
+		SearchRootMaterial = nullptr;
+		ClearAllParameterWidget();
+		MaterialParameters.ClearAll();
+	}
+	BuildParameterWidget();
 }
 
 void FMIFinderModule::OnRootMaterialLayerChanged(const FAssetData& InAssetData)
@@ -509,6 +575,58 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildScalarParameterHeader()
 		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
 		.Text(NSLOCTEXT("ScalarParameterHeader","Condition", "Type"))
 	];
+}
+
+void FMIFinderModule::ClearAllParameterWidget()
+{
+	if( !StaticSwitchInnerBox.IsValid() ||!TextureParameterInnerBox.IsValid() || !ScalarParameterInnerBox.IsValid())
+	{
+		return;
+	}
+	StaticSwitchInnerBox->ClearChildren();
+	TextureParameterInnerBox->ClearChildren();
+	ScalarParameterInnerBox->ClearChildren();
+}
+
+void FMIFinderModule::BuildParameterWidget()
+{
+	if(!StaticSwitchInnerBox.IsValid() || !TextureParameterInnerBox.IsValid() ||!ScalarParameterInnerBox.IsValid())
+		return;
+	StaticSwitchInnerBox->ClearChildren();
+	TextureParameterInnerBox->ClearChildren();
+	ScalarParameterInnerBox->ClearChildren();
+	for(const auto& StaticSwitch : MaterialParameters.StaticSwitchParameters)
+	{
+		StaticSwitchInnerBox->AddSlot()
+				.AutoHeight()
+				.Padding(WidgetLayoutParam::WidgetPadding)
+				[
+					SNew(SStaticSwitchParameterWidget)
+					.InItem(StaticSwitch)
+				];
+	}
+
+	for(const auto& Texture : MaterialParameters.TextureParameters)
+	{
+		TextureParameterInnerBox->AddSlot()
+		.AutoHeight()
+		.Padding(WidgetLayoutParam::WidgetPadding)
+		[
+			SNew(STextureParameterWidget)
+			.InItem(Texture)
+		];
+	}
+
+	for(const auto& Scalar : MaterialParameters.ScalarParameters)
+	{
+		ScalarParameterInnerBox->AddSlot()
+		.AutoHeight()
+		.Padding(WidgetLayoutParam::WidgetPadding)
+		[
+			SNew(SScalarParameterWidget)
+			.InItem(Scalar)
+		];
+	}
 }
 
 
