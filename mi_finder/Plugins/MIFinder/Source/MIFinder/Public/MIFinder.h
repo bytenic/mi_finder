@@ -54,10 +54,6 @@ private:
 	void ClearAllParameterWidget();
 	void BuildParameterWidget();
 	
-	void BuildStaticSwitchBox();
-	void BuildTextureBox();
-	void BuildScalarBox();
-	
 private:
 	TSharedPtr<FUICommandList> PluginCommands;
 	

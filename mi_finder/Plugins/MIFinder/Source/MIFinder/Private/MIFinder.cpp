@@ -137,8 +137,24 @@ TSharedRef<SDockTab> FMIFinderModule::OnSpawnPluginTab(const FSpawnTabArgs& Spaw
 				]
 				+ SVerticalBox::Slot()
 				.AutoHeight()
+				.Padding(WidgetLayoutParam::WidgetPadding)
+				[
+					SNew(SSeparator)
+					//.SeparatorImage(FAppStyle::GetBrush("Menu.Separator"))
+					.Orientation(Orient_Horizontal)
+				]
+				+ SVerticalBox::Slot()
+				.AutoHeight()
 				[
 					BuildSelectLayerFunctionBox()
+				]
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				.Padding(WidgetLayoutParam::WidgetPadding)
+				[
+					SNew(SSeparator)
+					//.SeparatorImage(FAppStyle::GetBrush("Menu.Separator"))
+					.Orientation(Orient_Horizontal)
 				]
 				+ SVerticalBox::Slot()
 				.FillHeight(1.0)
@@ -147,9 +163,6 @@ TSharedRef<SDockTab> FMIFinderModule::OnSpawnPluginTab(const FSpawnTabArgs& Spaw
 				]
 			]
 		];
-	//BuildStaticSwitchBox();
-	//BuildTextureBox();
-	//BuildScalarBox();
 	return MainWidget;
 }
 
@@ -300,6 +313,14 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildParametersBox()
 					BuildStaticSwitchParameterHeader()
 				]
 				+ SVerticalBox::Slot()
+				.AutoHeight()
+				.Padding(WidgetLayoutParam::WidgetPadding)
+				[
+					SNew(SSeparator)
+					.SeparatorImage(FAppStyle::GetBrush("Menu.Separator"))
+					.Orientation(Orient_Horizontal)
+				]
+				+ SVerticalBox::Slot()
 				.Padding(WidgetLayoutParam::WidgetPadding)
 				.FillHeight(1.0f)
 				[
@@ -328,6 +349,14 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildParametersBox()
 				.AutoHeight()
 				[
 					BuildTextureParameterHeader()
+				]
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				.Padding(WidgetLayoutParam::WidgetPadding)
+				[
+					SNew(SSeparator)
+					.SeparatorImage(FAppStyle::GetBrush("Menu.Separator"))
+					.Orientation(Orient_Horizontal)
 				]
 				+ SVerticalBox::Slot()
 				.Padding(WidgetLayoutParam::WidgetPadding)
@@ -361,6 +390,14 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildParametersBox()
 					BuildScalarParameterHeader()
 				]
 				+ SVerticalBox::Slot()
+				.AutoHeight()
+				.Padding(WidgetLayoutParam::WidgetPadding)
+				[
+					SNew(SSeparator)
+					.SeparatorImage(FAppStyle::GetBrush("Menu.Separator"))
+					.Orientation(Orient_Horizontal)
+				]
+				+ SVerticalBox::Slot()
 				.Padding(WidgetLayoutParam::WidgetPadding)
 				.FillHeight(1.0f)
 				[
@@ -373,60 +410,6 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildParametersBox()
 				]
 			];
 	return ret;
-}
-
-void FMIFinderModule::BuildStaticSwitchBox()
-{
-	if(!StaticSwitchInnerBox.IsValid())
-		return;
-
-	StaticSwitchInnerBox->ClearChildren();
-	for(int i = 0 ; i< 300; i++)
-	{
-		StaticSwitchInnerBox->AddSlot()
-		.AutoHeight()
-		.Padding(WidgetLayoutParam::WidgetPadding)
-		[
-			SNew(SStaticSwitchParameterWidget)
-			.InItem(MakeShareable<StaticSwitchParameterDataObject>(new StaticSwitchParameterDataObject()))
-		];
-	}
-}
-
-void FMIFinderModule::BuildTextureBox()
-{
-	if(!TextureParameterInnerBox.IsValid())
-		return;
-
-	TextureParameterInnerBox->ClearChildren();
-	for(int i = 0 ; i< 300; i++)
-	{
-		TextureParameterInnerBox->AddSlot()
-		.AutoHeight()
-		.Padding(WidgetLayoutParam::WidgetPadding)
-		[
-			SNew(STextureParameterWidget)
-			.InItem(MakeShareable<TextureParameterDataObject>(new TextureParameterDataObject()))
-		];
-	}
-}
-
-void FMIFinderModule::BuildScalarBox()
-{
-	if(!ScalarParameterInnerBox.IsValid())
-		return;
-
-	ScalarParameterInnerBox->ClearChildren();
-	for(int i = 0 ; i< 300; i++)
-	{
-		ScalarParameterInnerBox->AddSlot()
-		.AutoHeight()
-		.Padding(WidgetLayoutParam::WidgetPadding)
-		[
-			SNew(SScalarParameterWidget)
-			.InItem(MakeShareable<FScalarParameterDataObject>(new FScalarParameterDataObject()))
-		];
-	}
 }
 
 void FMIFinderModule::OnRootMaterialChanged(const FAssetData& InAssetData)

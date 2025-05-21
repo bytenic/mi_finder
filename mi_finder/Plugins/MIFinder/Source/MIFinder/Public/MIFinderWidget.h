@@ -25,6 +25,14 @@ SLATE_END_ARGS()
 void Construct(const FArguments& InArgs);
 
 private:
+	void OnIsActiveChanged(ECheckBoxState NewState);
+	ECheckBoxState IsActive()const;
+
+	void OnIsEqualQueryChanged(ECheckBoxState NewState);
+	ECheckBoxState IsEqualQuery()const;
+	
+	
+private:
 	TSharedPtr<StaticSwitchParameterDataObject> WidgetData{};
 };
 
@@ -50,7 +58,13 @@ SLATE_END_ARGS()
 void Construct(const FArguments& InArgs);
 
 private:
+	void OnIsActiveChanged(ECheckBoxState NewState);
+	ECheckBoxState OnIsActive()const;
+	
 	void OnTextureChanged(const FAssetData& InAssetData);
+
+	void OnIsEqualQueryChanged(ECheckBoxState NewState);
+	ECheckBoxState IsEqualQuery()const;
 	
 private:
 	TWeakObjectPtr<UTexture2D> CurrentSelectTexture{};
@@ -84,7 +98,19 @@ public:
 SLATE_END_ARGS()
 
 void Construct(const FArguments& InArgs);
-	
+
+private:
+	void OnIsActiveChanged(ECheckBoxState NewState);
+	ECheckBoxState IsActive()const;
+
+	void OnValueChanged(float NewValue);
+	TOptional<float> GetValue()const;
+
+	FText GetSelectedQueryTypeText()const;
+	void OnQueryTypeChanged(TSharedPtr<EScalarParameterQueryType> NewValue, ESelectInfo::Type SelectInfo);
+	TSharedRef<SWidget> MakeComboItemWidget(TSharedPtr<EScalarParameterQueryType> InItem) const;
 private:
 	TSharedPtr<FScalarParameterDataObject> WidgetData{};
+	TArray<TSharedPtr<EScalarParameterQueryType>> QueryTypeOptions;
+	TSharedPtr<EScalarParameterQueryType> CurrentSelectQueryType{};
 };
