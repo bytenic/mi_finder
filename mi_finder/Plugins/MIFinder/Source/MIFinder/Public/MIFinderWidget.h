@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MaterialInstanceFinder.h"
 
 struct StaticSwitchParameterDataObject
 {
@@ -71,12 +72,7 @@ private:
 	TSharedPtr<TextureParameterDataObject> WidgetData{};
 };
 
-enum class EScalarParameterQueryType :uint8
-{
-	Less, //未満
-	Equal,
-	Greater //超過
-};
+
 
 struct FScalarParameterDataObject
 {
