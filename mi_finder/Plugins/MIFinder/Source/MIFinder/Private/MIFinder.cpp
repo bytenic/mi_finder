@@ -34,7 +34,7 @@ void FMIFinderModule::MaterialParameterWrapper::ClearAll()
 	ScalarParameters.Empty();
 }
 
-void FMIFinderModule::MaterialParameterWrapper::BuildParameterFormMaterial(const UMaterial* Material)
+void FMIFinderModule::MaterialParameterWrapper::BuildParameterFromMaterial(const UMaterial* Material)
 {
 	TArray<FMaterialParameterInfo> ParameterInfos;
 	TArray<FGuid> ParameterIds;
@@ -76,7 +76,7 @@ void FMIFinderModule::MaterialParameterWrapper::BuildParameterFormMaterial(const
 		float Value = 0.0f;
 		if (Material->GetScalarParameterValue(Info, Value))
 		{
-			ScalarParameters.Add(MakeShared<FScalarParameterDataObject>(Info.Name.ToString(),Value, Info.Association, EScalarParameterQueryType::Equal, false));
+			ScalarParameters.Add(MakeShared<FScalarParameterDataObject>(Info.Name.ToString(),Value, Info.Association, MIFinderScalarParameterQueryTypeEqual, false));
 		}
 	}
 }
@@ -419,7 +419,7 @@ void FMIFinderModule::OnRootMaterialChanged(const FAssetData& InAssetData)
 		SearchRootMaterial = Material;
 		ClearAllParameterWidget();
 		MaterialParameters.ClearAll();
-		MaterialParameters.BuildParameterFormMaterial(Material);
+		MaterialParameters.BuildParameterFromMaterial(Material);
 	}
 	else
 	{
@@ -436,6 +436,10 @@ void FMIFinderModule::OnRootMaterialLayerChanged(const FAssetData& InAssetData)
 	{
 		MaterialLayerAsset = MaterialLayer;
 	}
+	else
+	{
+		MaterialLayerAsset = nullptr;
+	}
 }
 
 void FMIFinderModule::OnRootMaterialBlendChanged(const FAssetData& InAssetData)
@@ -443,6 +447,10 @@ void FMIFinderModule::OnRootMaterialBlendChanged(const FAssetData& InAssetData)
 	if(auto MaterialBlend = Cast<UMaterialFunctionMaterialLayerBlend>(InAssetData.GetAsset()))
 	{
 		MaterialBlendAsset = MaterialBlend;
+	}
+	else
+	{
+		MaterialBlendAsset = nullptr;
 	}
 }
 
@@ -543,7 +551,7 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildScalarParameterHeader()
 	+ SHorizontalBox::Slot()
 	.Padding(WidgetLayoutParam::WidgetPadding)
 	.HAlign(HAlign_Left)
-	.FillWidth(WidgetLayoutParam::ScalarParameterRowRatioConditionType)
+	.FillWidth(WidgetLayoutParam::ScalarParameterRowRatioFloatValue)
 	[
 		SNew(STextBlock)
 		.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))

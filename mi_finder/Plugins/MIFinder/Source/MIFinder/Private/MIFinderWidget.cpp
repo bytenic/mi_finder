@@ -92,7 +92,18 @@ void STextureParameterWidget::Construct(const FArguments& InArgs)
 		return;
 	}
 	WidgetData = InArgs._InItem;
-
+	if (!WidgetData->TexturePathName.IsEmpty())
+	{
+		const FSoftObjectPath Path(WidgetData->TexturePathName);
+		if (UTexture2D* LoadedTexture = Cast<UTexture2D>(Path.TryLoad()))
+		{
+			CurrentSelectTexture = LoadedTexture;
+		}
+		else
+		{
+			CurrentSelectTexture = nullptr;
+		}
+	}
 	ChildSlot
 	[
 		SNew(SHorizontalBox)
@@ -178,7 +189,7 @@ ECheckBoxState STextureParameterWidget::IsEqualQuery() const
 }
 
 FScalarParameterDataObject::FScalarParameterDataObject(const FString& ParamName, float Value,
-                                                       EMaterialParameterAssociation Association, EScalarParameterQueryType QueryType, bool IsActive)
+                                                       EMaterialParameterAssociation Association, ScalarParameterQueryType QueryType, bool IsActive)
 		: ParameterName(ParamName), QueryValue(Value), Association(Association), QueryType(QueryType), IsActive(IsActive)
 {
 }
@@ -191,9 +202,9 @@ void SScalarParameterWidget::Construct(const FArguments& InArgs)
 	}
 	WidgetData = InArgs._InItem;
 
-	QueryTypeOptions.Add(MakeShared<EScalarParameterQueryType>(EScalarParameterQueryType::Equal));
-	QueryTypeOptions.Add(MakeShared<EScalarParameterQueryType>(EScalarParameterQueryType::Greater));
-	QueryTypeOptions.Add(MakeShared<EScalarParameterQueryType>(EScalarParameterQueryType::Less));
+	QueryTypeOptions.Add(MakeShared<ScalarParameterQueryType>(MIFinderScalarParameterQueryTypeEqual));
+	QueryTypeOptions.Add(MakeShared<ScalarParameterQueryType>(MIFinderScalarParameterQueryTypeLess));
+	QueryTypeOptions.Add(MakeShared<ScalarParameterQueryType>(MIFinderScalarParameterQueryTypeGreater));
 	// デフォルト選択
 	CurrentSelectQueryType = QueryTypeOptions[0];
 
@@ -232,7 +243,7 @@ void SScalarParameterWidget::Construct(const FArguments& InArgs)
 		.FillWidth(WidgetLayoutParam::ScalarParameterRowRatioConditionType)
 		.HAlign(HAlign_Left)
 		[
-			SNew(SComboBox<TSharedPtr<EScalarParameterQueryType>>)
+			SNew(SComboBox<TSharedPtr<ScalarParameterQueryType>>)
 			.OptionsSource(&QueryTypeOptions)
 			.OnGenerateWidget(this, &SScalarParameterWidget::MakeComboItemWidget)
 			.OnSelectionChanged(this, &SScalarParameterWidget::OnQueryTypeChanged)
@@ -275,32 +286,32 @@ FText SScalarParameterWidget::GetSelectedQueryTypeText() const
 
 	switch (*CurrentSelectQueryType)
 	{
-	case EScalarParameterQueryType::Less: return FText::FromString(TEXT("Less"));
-	case EScalarParameterQueryType::Equal: return FText::FromString(TEXT("Equal"));
-	case EScalarParameterQueryType::Greater: return FText::FromString(TEXT("Greater"));
+	case MIFinderScalarParameterQueryTypeEqual: return FText::FromString(TEXT("Equal"));
+	case MIFinderScalarParameterQueryTypeLess: return FText::FromString(TEXT("Less"));
+	case MIFinderScalarParameterQueryTypeGreater: return FText::FromString(TEXT("Greater"));
 	default: return FText::FromString(TEXT("Error"));
 	}
 }
 
-void SScalarParameterWidget::OnQueryTypeChanged(TSharedPtr<EScalarParameterQueryType> NewValue,
+void SScalarParameterWidget::OnQueryTypeChanged(TSharedPtr<int32> NewValue,
 	ESelectInfo::Type SelectInfo)
 {
 	if (NewValue.IsValid())
 	{
 		CurrentSelectQueryType = NewValue;
-		
+		WidgetData->QueryType = *NewValue;
 	}
 }
 
-TSharedRef<SWidget> SScalarParameterWidget::MakeComboItemWidget(TSharedPtr<EScalarParameterQueryType> InItem) const
+TSharedRef<SWidget> SScalarParameterWidget::MakeComboItemWidget(TSharedPtr<ScalarParameterQueryType> InItem) const
 {
 	FText Label;
 
 	switch (*InItem)
 	{
-	case EScalarParameterQueryType::Less: Label = FText::FromString(TEXT("Less")); break;
-	case EScalarParameterQueryType::Equal: Label = FText::FromString(TEXT("Equal")); break;
-	case EScalarParameterQueryType::Greater: Label = FText::FromString(TEXT("Greater")); break;
+	case MIFinderScalarParameterQueryTypeEqual: Label = FText::FromString(TEXT("Equal")); break;
+	case MIFinderScalarParameterQueryTypeLess: Label = FText::FromString(TEXT("Less")); break;
+	case MIFinderScalarParameterQueryTypeGreater: Label = FText::FromString(TEXT("Greater")); break;
 	default: Label = FText::FromString(TEXT("Unknown")); break;
 	}
 	return SNew(STextBlock).Text(Label);

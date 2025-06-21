@@ -5,16 +5,16 @@
 #include "CoreMinimal.h"
 #include "Serialization/JsonSerializerMacros.h"
 
-enum class EScalarParameterQueryType :uint8
-{
-	Less, //未満
-	Equal,
-	Greater //超過
-};
+static constexpr int32 MIFinderScalarParameterQueryTypeEqual = 0;
+static constexpr int32 MIFinderScalarParameterQueryTypeLess = 1;
+static constexpr int32 MIFinderScalarParameterQueryTypeGreater = 2;
+using ScalarParameterQueryType = int32;
 
 static constexpr int32 MIFinderParameterAssociationLayerParameter = 0;
 static constexpr int32 MIFinderParameterAssociationBlendParameter = 1;
 static constexpr int32 MIFinderParameterAssociationGlobalParameter = 2;
+using MIFinderParameterAssociation = int32;
+
 
 static_assert(MIFinderParameterAssociationLayerParameter == LayerParameter,"[MIFinder]Error MIFinderParameterAssociationLayerParameter");
 static_assert(MIFinderParameterAssociationBlendParameter == BlendParameter,"[MIFinder]Error MIFinderParameterAssociationBlendParameter");

@@ -26,7 +26,7 @@ public :
 		MaterialParameterWrapper();
 		~MaterialParameterWrapper() = default;
 		void ClearAll();
-		void BuildParameterFormMaterial(const UMaterial* Material);
+		void BuildParameterFromMaterial(const UMaterial* Material);
 	};
 	
 public:

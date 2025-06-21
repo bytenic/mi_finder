@@ -79,11 +79,11 @@ struct FScalarParameterDataObject
 	FString ParameterName{TEXT("None")};
 	float QueryValue{.0f};
 	EMaterialParameterAssociation Association{EMaterialParameterAssociation::GlobalParameter};
-	EScalarParameterQueryType QueryType{EScalarParameterQueryType::Equal};
+	int32 QueryType{MIFinderScalarParameterQueryTypeEqual};
 	bool IsActive{true};
 	
 	FScalarParameterDataObject() = default;
-	FScalarParameterDataObject(const FString& ParamName, float Value, EMaterialParameterAssociation Association, EScalarParameterQueryType QueryType, bool IsActive);
+	FScalarParameterDataObject(const FString& ParamName, float Value, EMaterialParameterAssociation Association, int32 QueryType, bool IsActive);
 };
 
 class SScalarParameterWidget : public SCompoundWidget
@@ -103,10 +103,10 @@ private:
 	TOptional<float> GetValue()const;
 
 	FText GetSelectedQueryTypeText()const;
-	void OnQueryTypeChanged(TSharedPtr<EScalarParameterQueryType> NewValue, ESelectInfo::Type SelectInfo);
-	TSharedRef<SWidget> MakeComboItemWidget(TSharedPtr<EScalarParameterQueryType> InItem) const;
+	void OnQueryTypeChanged(TSharedPtr<int32> NewValue, ESelectInfo::Type SelectInfo);
+	TSharedRef<SWidget> MakeComboItemWidget(TSharedPtr<ScalarParameterQueryType> InItem) const;
 private:
 	TSharedPtr<FScalarParameterDataObject> WidgetData{};
-	TArray<TSharedPtr<EScalarParameterQueryType>> QueryTypeOptions;
-	TSharedPtr<EScalarParameterQueryType> CurrentSelectQueryType{};
+	TArray<TSharedPtr<ScalarParameterQueryType>> QueryTypeOptions;
+	TSharedPtr<ScalarParameterQueryType> CurrentSelectQueryType{};
 };
