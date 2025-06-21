@@ -29,6 +29,22 @@ struct FMIFinderScalarQuery : public FJsonSerializable
 	JSON_SERIALIZE("Association", Association);
 	END_JSON_SERIALIZER
 
+	FMIFinderScalarQuery() = default;
+	explicit FMIFinderScalarQuery(FString InParameterName,
+								  float   InValue,
+								  int32   InQueryType   = TypeEqual,
+								  int32   InAssociation = MIFinderParameterAssociationGlobalParameter)
+		: ParameterName(MoveTemp(InParameterName))
+		, Value         (InValue)
+		, QueryType     (InQueryType)
+		, Association   (InAssociation)
+	{}
+	FMIFinderScalarQuery(const FMIFinderScalarQuery&)            = default;
+	FMIFinderScalarQuery(FMIFinderScalarQuery&&)      noexcept   = default;
+	FMIFinderScalarQuery& operator=(const FMIFinderScalarQuery&) = default;
+	FMIFinderScalarQuery& operator=(FMIFinderScalarQuery&&)      noexcept = default;
+	virtual ~FMIFinderScalarQuery() override = default;
+	
 	FString ParameterName{};
 	float Value{.0f};
 	int32 QueryType{TypeLess};
@@ -47,7 +63,23 @@ struct FMIFinderTexturePathQuery : public FJsonSerializable
 	JSON_SERIALIZE("IsEqualQuery", IsEqualQuery);
 	JSON_SERIALIZE("Association", Association);
 	END_JSON_SERIALIZER
-
+	
+	FMIFinderTexturePathQuery() = default;
+	explicit FMIFinderTexturePathQuery(FString InParameterName,
+									   FString InTexturePath,
+									   bool    bEqual        = true,
+									   int32   InAssociation = MIFinderParameterAssociationGlobalParameter)
+		: ParameterName(MoveTemp(InParameterName))
+		, TexturePath  (MoveTemp(InTexturePath))
+		, IsEqualQuery (bEqual)
+		, Association  (InAssociation)
+	{}
+	FMIFinderTexturePathQuery(const FMIFinderTexturePathQuery&)            = default;
+	FMIFinderTexturePathQuery(FMIFinderTexturePathQuery&&)      noexcept   = default;
+	FMIFinderTexturePathQuery& operator=(const FMIFinderTexturePathQuery&) = default;
+	FMIFinderTexturePathQuery& operator=(FMIFinderTexturePathQuery&&)      noexcept = default;
+	virtual ~FMIFinderTexturePathQuery() override = default;
+	
 	FString ParameterName{};
 	FString TexturePath{};
 	bool IsEqualQuery{true};
@@ -62,6 +94,21 @@ struct FMIFinderStaticSwitchQuery : public FJsonSerializable
 	JSON_SERIALIZE("Association", Association);
 	END_JSON_SERIALIZER
 
+	FMIFinderStaticSwitchQuery() = default;
+	explicit FMIFinderStaticSwitchQuery(FString InParameterName,
+										bool    bCondition    = true,
+										int32   InAssociation = MIFinderParameterAssociationGlobalParameter)
+		: ParameterName(MoveTemp(InParameterName))
+		, Condition   (bCondition)
+		, Association (InAssociation)
+	{}
+
+	FMIFinderStaticSwitchQuery(const FMIFinderStaticSwitchQuery&)            = default;
+	FMIFinderStaticSwitchQuery(FMIFinderStaticSwitchQuery&&)      noexcept   = default;
+	FMIFinderStaticSwitchQuery& operator=(const FMIFinderStaticSwitchQuery&) = default;
+	FMIFinderStaticSwitchQuery& operator=(FMIFinderStaticSwitchQuery&&)      noexcept = default;
+	virtual ~FMIFinderStaticSwitchQuery() override = default;
+	
 	FString ParameterName{};
 	bool Condition{true};
 	int32 Association{MIFinderParameterAssociationGlobalParameter};
@@ -77,6 +124,23 @@ struct FMIFinderQuery : public FJsonSerializable
 	JSON_SERIALIZE_ARRAY_SERIALIZABLE("Scalar", ScalarQueries, FMIFinderScalarQuery);
 	END_JSON_SERIALIZER
 
+	FMIFinderQuery() = default;
+	explicit FMIFinderQuery(FString                                 InSearchRoot,
+							TArray<FMIFinderStaticSwitchQuery>&&    InStaticSwitch,
+							TArray<FMIFinderTexturePathQuery> &&    InTexturePath,
+							TArray<FMIFinderScalarQuery>&&          InScalar)
+		: SearchRoot          (MoveTemp(InSearchRoot))
+		, StaticSwitchQueries (MoveTemp(InStaticSwitch))
+		, TexturePathQueries  (MoveTemp(InTexturePath))
+		, ScalarQueries       (MoveTemp(InScalar))
+	{}
+
+	FMIFinderQuery(const FMIFinderQuery&)            = default;
+	FMIFinderQuery(FMIFinderQuery&&)      noexcept   = default;
+	FMIFinderQuery& operator=(const FMIFinderQuery&) = default;
+	FMIFinderQuery& operator=(FMIFinderQuery&&)      noexcept = default;
+	virtual ~FMIFinderQuery() override = default;
+	
 	FString SearchRoot{};
 	TArray<FMIFinderStaticSwitchQuery> StaticSwitchQueries{};
 	TArray<FMIFinderTexturePathQuery> TexturePathQueries{};

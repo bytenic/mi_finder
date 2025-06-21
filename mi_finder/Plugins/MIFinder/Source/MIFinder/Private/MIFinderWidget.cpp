@@ -325,5 +325,4 @@ TSharedRef<SWidget> SScalarParameterWidget::MakeComboItemWidget(TSharedPtr<Scala
 	return SNew(STextBlock).Text(Label);
 }
 
-
 #undef LOCTEXT_NAMESPACE
