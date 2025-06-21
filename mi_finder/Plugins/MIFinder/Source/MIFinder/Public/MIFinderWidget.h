@@ -23,16 +23,17 @@ public:
 	SLATE_ARGUMENT(TSharedPtr<StaticSwitchParameterDataObject>, InItem)
 SLATE_END_ARGS()
 
-void Construct(const FArguments& InArgs);
-
+	void Construct(const FArguments& InArgs);
+	bool IsEditingEnabled() const
+	{
+		return WidgetData.IsValid() && WidgetData->IsActive;
+	}
 private:
 	void OnIsActiveChanged(ECheckBoxState NewState);
 	ECheckBoxState IsActive()const;
-
 	void OnIsEqualQueryChanged(ECheckBoxState NewState);
 	ECheckBoxState IsEqualQuery()const;
-	
-	
+
 private:
 	TSharedPtr<StaticSwitchParameterDataObject> WidgetData{};
 };
@@ -56,12 +57,15 @@ public:
 	SLATE_ARGUMENT(TSharedPtr<TextureParameterDataObject>, InItem)
 SLATE_END_ARGS()
 
-void Construct(const FArguments& InArgs);
-
+	void Construct(const FArguments& InArgs);
+	bool IsEditingEnabled() const
+	{
+		return WidgetData.IsValid() && WidgetData->IsActive;
+	}
 private:
 	void OnIsActiveChanged(ECheckBoxState NewState);
 	ECheckBoxState OnIsActive()const;
-	
+
 	void OnTextureChanged(const FAssetData& InAssetData);
 
 	void OnIsEqualQueryChanged(ECheckBoxState NewState);
@@ -93,7 +97,11 @@ public:
 	SLATE_ARGUMENT(TSharedPtr<FScalarParameterDataObject>, InItem)
 SLATE_END_ARGS()
 
-void Construct(const FArguments& InArgs);
+	void Construct(const FArguments& InArgs);
+	bool IsEditingEnabled() const
+	{
+		return WidgetData.IsValid() && WidgetData->IsActive;
+	}
 
 private:
 	void OnIsActiveChanged(ECheckBoxState NewState);

@@ -43,6 +43,7 @@ void SStaticSwitchParameterWidget::Construct(const FArguments& InArgs)
 			SNew(STextBlock)
 			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
 			.Text(FText::FromString(WidgetData->ParameterName))
+			.IsEnabled(this, &SStaticSwitchParameterWidget::IsEditingEnabled)
 		]
 		+ SHorizontalBox::Slot()
 		.Padding(WidgetLayoutParam::WidgetPadding)
@@ -52,6 +53,7 @@ void SStaticSwitchParameterWidget::Construct(const FArguments& InArgs)
 			SNew(SCheckBox)
 			.OnCheckStateChanged(this, &SStaticSwitchParameterWidget::OnIsEqualQueryChanged)
 			.IsChecked(this, &SStaticSwitchParameterWidget::IsEqualQuery)
+			.IsEnabled(this, &SStaticSwitchParameterWidget::IsEditingEnabled)
 		]
 	];
 }
@@ -124,6 +126,7 @@ void STextureParameterWidget::Construct(const FArguments& InArgs)
 			SNew(STextBlock)
 			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
 			.Text(FText::FromString(WidgetData->ParameterName))
+			.IsEnabled(this, &STextureParameterWidget::IsEditingEnabled)
 		]
 		+ SHorizontalBox::Slot()
 		.Padding(WidgetLayoutParam::WidgetPadding)
@@ -132,6 +135,7 @@ void STextureParameterWidget::Construct(const FArguments& InArgs)
 		[
 		SNew(SObjectPropertyEntryBox)
 				.AllowedClass(UTexture2D::StaticClass())
+				.IsEnabled(this, &STextureParameterWidget::IsEditingEnabled)
 				.ObjectPath(TAttribute<FString>::CreateLambda([this]()
 				{
 					if(!CurrentSelectTexture.IsValid())
@@ -150,6 +154,7 @@ void STextureParameterWidget::Construct(const FArguments& InArgs)
 			SNew(SCheckBox)
 			.OnCheckStateChanged(this, &STextureParameterWidget::OnIsEqualQueryChanged)
 			.IsChecked(this, &STextureParameterWidget::IsEqualQuery)
+			.IsEnabled(this, &STextureParameterWidget::IsEditingEnabled)
 		]
 	];
 }
@@ -228,6 +233,7 @@ void SScalarParameterWidget::Construct(const FArguments& InArgs)
 			SNew(STextBlock)
 			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::MaterialParameterTextFontSize))
 			.Text(FText::FromString(WidgetData->ParameterName))
+			.IsEnabled(this, &SScalarParameterWidget::IsEditingEnabled)
 		]
 		+ SHorizontalBox::Slot()
 		.Padding(WidgetLayoutParam::WidgetPadding)
@@ -237,6 +243,7 @@ void SScalarParameterWidget::Construct(const FArguments& InArgs)
 			SNew(SNumericEntryBox<float>)
 			.Value(this, &SScalarParameterWidget::GetValue)
 			.OnValueChanged(this, &SScalarParameterWidget::OnValueChanged)
+			.IsEnabled(this, &SScalarParameterWidget::IsEditingEnabled)
 		]
 		+ SHorizontalBox::Slot()
 		.Padding(WidgetLayoutParam::WidgetPadding)
@@ -252,6 +259,7 @@ void SScalarParameterWidget::Construct(const FArguments& InArgs)
 				SNew(STextBlock)
 				.Text(this, &SScalarParameterWidget::GetSelectedQueryTypeText)
 			]
+			.IsEnabled(this, &SScalarParameterWidget::IsEditingEnabled)
 		]
 
 	];
