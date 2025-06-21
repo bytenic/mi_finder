@@ -27,6 +27,8 @@ public :
 		~MaterialParameterWrapper() = default;
 		void ClearAll();
 		void BuildParameterFromMaterial(const UMaterial* Material);
+		void BuildParameterFromMaterialLayer(const UMaterialFunctionMaterialLayer* Layer);
+		void BuildParameterFromMaterialBlend(const UMaterialFunctionMaterialLayerBlend* Blend);
 	};
 	
 public:

@@ -13,6 +13,9 @@
 #include "Materials/MaterialFunctionMaterialLayer.h"
 #include "Materials/MaterialFunctionMaterialLayerBlend.h"
 #include "WidgetLayoutParam.h"
+#include "Materials/MaterialExpressionScalarParameter.h"
+#include "Materials/MaterialExpressionStaticBoolParameter.h"
+#include "Materials/MaterialExpressionTextureSampleParameter.h"
 
 static const FName MIFinderTabName("MIFinder");
 
@@ -80,6 +83,91 @@ void FMIFinderModule::MaterialParameterWrapper::BuildParameterFromMaterial(const
 		}
 	}
 }
+
+void FMIFinderModule::MaterialParameterWrapper::BuildParameterFromMaterialLayer(
+	const UMaterialFunctionMaterialLayer* Layer)
+{
+	if (!Layer) { return; }
+
+#if WITH_EDITOR   // FunctionExpressions はエディタ専用プロパティ
+	for (UMaterialExpression* Expr : Layer->GetExpressions())
+	{
+		if (auto* BoolExpr = Cast<UMaterialExpressionStaticBoolParameter>(Expr))
+		{
+			StaticSwitchParameters.Add(
+				MakeShared<StaticSwitchParameterDataObject>(
+					BoolExpr->ParameterName.ToString(),
+					EMaterialParameterAssociation::LayerParameter,
+					static_cast<bool>(BoolExpr->DefaultValue),
+					/*IsActive=*/false));
+		}
+		else if (auto* ScalarExpr = Cast<UMaterialExpressionScalarParameter>(Expr))
+		{
+			ScalarParameters.Add(
+				MakeShared<FScalarParameterDataObject>(
+					ScalarExpr->ParameterName.ToString(),
+					ScalarExpr->DefaultValue,
+					EMaterialParameterAssociation::LayerParameter,
+					MIFinderScalarParameterQueryTypeEqual,
+					/*IsActive=*/false));
+		}
+		else if (auto* TexExpr = Cast<UMaterialExpressionTextureSampleParameter>(Expr))
+		{
+			const FString Path = TexExpr->Texture ? TexExpr->Texture->GetPathName() : FString{};
+			TextureParameters.Add(
+				MakeShared<TextureParameterDataObject>(
+					TexExpr->ParameterName.ToString(),
+					Path,
+					EMaterialParameterAssociation::LayerParameter,
+					/*IsEqualQuery=*/true,
+					/*IsActive=*/false));
+		}
+	}
+#endif
+}
+
+void FMIFinderModule::MaterialParameterWrapper::BuildParameterFromMaterialBlend(
+	const UMaterialFunctionMaterialLayerBlend* Blend)
+{
+	if (!Blend) { return; }
+
+#if WITH_EDITOR   // FunctionExpressions はエディタ専用プロパティ
+	for (UMaterialExpression* Expr : Blend->GetExpressions())
+	{
+		if (auto* BoolExpr = Cast<UMaterialExpressionStaticBoolParameter>(Expr))
+		{
+			StaticSwitchParameters.Add(
+				MakeShared<StaticSwitchParameterDataObject>(
+					BoolExpr->ParameterName.ToString(),
+					EMaterialParameterAssociation::BlendParameter,
+					static_cast<bool>(BoolExpr->DefaultValue),
+					/*IsActive=*/false));
+		}
+		else if (auto* ScalarExpr = Cast<UMaterialExpressionScalarParameter>(Expr))
+		{
+			ScalarParameters.Add(
+				MakeShared<FScalarParameterDataObject>(
+					ScalarExpr->ParameterName.ToString(),
+					ScalarExpr->DefaultValue,
+					EMaterialParameterAssociation::BlendParameter,
+					MIFinderScalarParameterQueryTypeEqual,
+					/*IsActive=*/false));
+		}
+		else if (auto* TexExpr = Cast<UMaterialExpressionTextureSampleParameter>(Expr))
+		{
+			const FString Path = TexExpr->Texture ? TexExpr->Texture->GetPathName() : FString{};
+			TextureParameters.Add(
+				MakeShared<TextureParameterDataObject>(
+					TexExpr->ParameterName.ToString(),
+					Path,
+					EMaterialParameterAssociation::BlendParameter,
+					/*IsEqualQuery=*/true,
+					/*IsActive=*/false));
+		}
+	}
+#endif
+}
+
 
 void FMIFinderModule::StartupModule()
 {
@@ -432,26 +520,38 @@ void FMIFinderModule::OnRootMaterialChanged(const FAssetData& InAssetData)
 
 void FMIFinderModule::OnRootMaterialLayerChanged(const FAssetData& InAssetData)
 {
-	if(auto MaterialLayer = Cast<UMaterialFunctionMaterialLayer>(InAssetData.GetAsset()))
-	{
-		MaterialLayerAsset = MaterialLayer;
-	}
-	else
-	{
-		MaterialLayerAsset = nullptr;
-	}
+    if (auto* Layer = Cast<UMaterialFunctionMaterialLayer>(InAssetData.GetAsset()))
+    {
+        MaterialLayerAsset = Layer;
+        ClearAllParameterWidget();
+        MaterialParameters.ClearAll();
+        MaterialParameters.BuildParameterFromMaterialLayer(Layer);   // ★ 追加
+    }
+    else
+    {
+        MaterialLayerAsset = nullptr;
+        ClearAllParameterWidget();
+        MaterialParameters.ClearAll();
+    }
+    BuildParameterWidget();
 }
 
 void FMIFinderModule::OnRootMaterialBlendChanged(const FAssetData& InAssetData)
 {
-	if(auto MaterialBlend = Cast<UMaterialFunctionMaterialLayerBlend>(InAssetData.GetAsset()))
+	if (auto* Blend = Cast<UMaterialFunctionMaterialLayerBlend>(InAssetData.GetAsset()))
 	{
-		MaterialBlendAsset = MaterialBlend;
+		MaterialBlendAsset = Blend;
+		ClearAllParameterWidget();
+		MaterialParameters.ClearAll();
+		MaterialParameters.BuildParameterFromMaterialBlend(Blend);   // ★ 追加
 	}
 	else
 	{
 		MaterialBlendAsset = nullptr;
+		ClearAllParameterWidget();
+		MaterialParameters.ClearAll();
 	}
+	BuildParameterWidget();
 }
 
 TSharedRef<SHorizontalBox> FMIFinderModule::BuildStaticSwitchParameterHeader()
