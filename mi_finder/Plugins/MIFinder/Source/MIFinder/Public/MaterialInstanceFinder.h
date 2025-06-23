@@ -147,12 +147,39 @@ struct FMIFinderQuery : public FJsonSerializable
 	TArray<FMIFinderScalarQuery> ScalarQueries{};
 };
 
+struct FMIFinderQueryResult : public FJsonSerializable
+{
+	BEGIN_JSON_SERIALIZER
+	JSON_SERIALIZE("SearchRoot", SearchRoot);
+	JSON_SERIALIZE_OBJECT_SERIALIZABLE("Query", Query);
+	JSON_SERIALIZE_ARRAY("Results", Results);
+	END_JSON_SERIALIZER
+	
+	FString SearchRoot{};
+	FMIFinderQuery Query{};
+	TArray<FString> Results{};
+};
+
 class MIFINDER_API FMaterialInstanceFinder
 {
 public:
 	FMaterialInstanceFinder();
+	FMaterialInstanceFinder(FMIFinderQuery&& Query);
 	~FMaterialInstanceFinder();
 
+
+	FMIFinderQueryResult Execute(bool Async = false);
+	
+private:
+	TArray<TSoftObjectPtr<UMaterialInstance>> GetMaterrialPaths()const;
+	FMIFinderQueryResult ExecuteSequential();
+	bool QueryMaterial(UMaterialInstance* InMaterialInstance);
+	bool TextureNameQuery(UMaterialInstance* InMaterialInstance);
+	bool StaticSwitchQuery(UMaterialInstance* InMaterialInstance);
+	bool ScalarQuery(UMaterialInstance* InMaterialInstance);
+	
+	
 private:
 	FMIFinderQuery Query{};
+	FMIFinderQueryResult Result{};
 };
