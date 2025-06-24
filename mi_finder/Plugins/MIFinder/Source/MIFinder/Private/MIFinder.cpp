@@ -3,6 +3,7 @@
 #include "MIFinder.h"
 #include "MIFinderStyle.h"
 #include "MIFinderCommands.h"
+#include "MIFinderResultWindow.h"
 
 #include "PropertyCustomizationHelpers.h"
 #include "Widgets/Docking/SDockTab.h"
@@ -217,6 +218,22 @@ TSharedRef<SDockTab> FMIFinderModule::OnSpawnPluginTab(const FSpawnTabArgs& Spaw
 			.VAlign(VAlign_Top)
 			[
 				SNew(SVerticalBox)
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				.Padding(WidgetLayoutParam::WidgetPadding)
+				[
+					SNew(SButton)
+					.HAlign(HAlign_Center)
+					.Text(LOCTEXT("ExecuteFilterButton", "Search"))
+					.OnClicked_Raw(this, &FMIFinderModule::OnExecuteFilterClicked)   // ← コールバック
+				]				+ SVerticalBox::Slot()
+				.AutoHeight()
+				.Padding(WidgetLayoutParam::WidgetPadding)
+				[
+					SNew(SSeparator)
+					.SeparatorImage(FAppStyle::GetBrush("Menu.Separator"))
+					.Orientation(Orient_Horizontal)
+				]
 				+SVerticalBox::Slot()
 				.Padding(WidgetLayoutParam::WidgetPadding)
 				.AutoHeight()
@@ -277,7 +294,8 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildRootMaterialBox()
 			[
 				SNew(SEditableTextBox)
 				.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(),WidgetLayoutParam::ParameterTextFontSize))
-				.Text(NSLOCTEXT("AssetSearchTab","SearchRootTextBox", "/Game"))
+				.Text_Raw(this, &FMIFinderModule::GetSearchRootPathText)
+				.OnTextChanged_Raw(this, &FMIFinderModule::OnSearchRootChanged)  
 			]
 		]
 	]
@@ -500,6 +518,16 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildParametersBox()
 	return ret;
 }
 
+FText FMIFinderModule::GetSearchRootPathText() const
+{
+	return FText::FromString(SearchRootPath);
+}
+
+void FMIFinderModule::OnSearchRootChanged(const FText& InNewText)
+{
+	SearchRootPath = InNewText.ToString();
+}
+
 void FMIFinderModule::OnRootMaterialChanged(const FAssetData& InAssetData)
 {
 	if(const auto Material = Cast<UMaterial>(InAssetData.GetAsset()))
@@ -524,14 +552,14 @@ void FMIFinderModule::OnRootMaterialLayerChanged(const FAssetData& InAssetData)
     {
         MaterialLayerAsset = Layer;
         ClearAllParameterWidget();
-        MaterialParameters.ClearAll();
-        MaterialParameters.BuildParameterFromMaterialLayer(Layer);   // ★ 追加
+        MaterialLayerParameters.ClearAll();
+        MaterialLayerParameters.BuildParameterFromMaterialLayer(Layer);
     }
     else
     {
         MaterialLayerAsset = nullptr;
         ClearAllParameterWidget();
-        MaterialParameters.ClearAll();
+        MaterialLayerParameters.ClearAll();
     }
     BuildParameterWidget();
 }
@@ -542,16 +570,22 @@ void FMIFinderModule::OnRootMaterialBlendChanged(const FAssetData& InAssetData)
 	{
 		MaterialBlendAsset = Blend;
 		ClearAllParameterWidget();
-		MaterialParameters.ClearAll();
-		MaterialParameters.BuildParameterFromMaterialBlend(Blend);   // ★ 追加
+		MaterialBlendParameters.ClearAll();
+		MaterialBlendParameters.BuildParameterFromMaterialBlend(Blend);   // ★ 追加
 	}
 	else
 	{
 		MaterialBlendAsset = nullptr;
 		ClearAllParameterWidget();
-		MaterialParameters.ClearAll();
+		MaterialBlendParameters.ClearAll();
 	}
 	BuildParameterWidget();
+}
+
+FReply FMIFinderModule::OnExecuteFilterClicked()
+{
+	ExecuteFilterMaterialInstance();
+	return FReply::Handled();
 }
 
 TSharedRef<SHorizontalBox> FMIFinderModule::BuildStaticSwitchParameterHeader()
@@ -686,38 +720,137 @@ void FMIFinderModule::BuildParameterWidget()
 	StaticSwitchInnerBox->ClearChildren();
 	TextureParameterInnerBox->ClearChildren();
 	ScalarParameterInnerBox->ClearChildren();
-	for(const auto& StaticSwitch : MaterialParameters.StaticSwitchParameters)
-	{
-		StaticSwitchInnerBox->AddSlot()
-				.AutoHeight()
-				.Padding(WidgetLayoutParam::WidgetPadding)
-				[
-					SNew(SStaticSwitchParameterWidget)
-					.InItem(StaticSwitch)
-				];
-	}
 
-	for(const auto& Texture : MaterialParameters.TextureParameters)
+	const auto BuildFunc = [this](const MaterialParameterWrapper& Parameters)
 	{
-		TextureParameterInnerBox->AddSlot()
-		.AutoHeight()
-		.Padding(WidgetLayoutParam::WidgetPadding)
-		[
-			SNew(STextureParameterWidget)
-			.InItem(Texture)
-		];
-	}
+		for(const auto& StaticSwitch : Parameters.StaticSwitchParameters)
+		{
+			StaticSwitchInnerBox->AddSlot()
+					.AutoHeight()
+					.Padding(WidgetLayoutParam::WidgetPadding)
+					[
+						SNew(SStaticSwitchParameterWidget)
+						.InItem(StaticSwitch)
+					];
+		}
 
-	for(const auto& Scalar : MaterialParameters.ScalarParameters)
+		for(const auto& Texture : Parameters.TextureParameters)
+		{
+			TextureParameterInnerBox->AddSlot()
+			.AutoHeight()
+			.Padding(WidgetLayoutParam::WidgetPadding)
+			[
+				SNew(STextureParameterWidget)
+				.InItem(Texture)
+			];
+		}
+
+		for(const auto& Scalar : Parameters.ScalarParameters)
+		{
+			ScalarParameterInnerBox->AddSlot()
+			.AutoHeight()
+			.Padding(WidgetLayoutParam::WidgetPadding)
+			[
+				SNew(SScalarParameterWidget)
+				.InItem(Scalar)
+			];
+		}
+	};
+	BuildFunc(MaterialParameters);
+	BuildFunc(MaterialLayerParameters);
+	BuildFunc(MaterialBlendParameters);
+}
+
+FMIFinderQuery FMIFinderModule::BuildQuery()
+{
+	TArray<FMIFinderStaticSwitchQuery> StaticSwitchQueries;
+	TArray<FMIFinderTexturePathQuery>  TexturePathQueries;
+	TArray<FMIFinderScalarQuery>       ScalarQueries;
+	
+	const auto GatherActiveParameters = [&] (const MaterialParameterWrapper& Wrapper)
 	{
-		ScalarParameterInnerBox->AddSlot()
-		.AutoHeight()
-		.Padding(WidgetLayoutParam::WidgetPadding)
-		[
-			SNew(SScalarParameterWidget)
-			.InItem(Scalar)
-		];
+		// ---- StaticSwitch ------------------------------------------------------
+		for (const auto& Param : Wrapper.StaticSwitchParameters)
+		{
+			if (!Param.IsValid() || !Param->IsActive) { continue; }
+
+			StaticSwitchQueries.Emplace(
+				Param->ParameterName,
+				Param->IsEqualQuery,
+				static_cast<int32>(Param->Association));        // ★ ctor 引数順は BuildParameterFromMaterial で確認可 :contentReference[oaicite:0]{index=0}
+		}
+
+		// ---- TexturePath -------------------------------------------------------
+		for (const auto& Param : Wrapper.TextureParameters)
+		{
+			if (!Param.IsValid() || !Param->IsActive) { continue; }
+
+			TexturePathQueries.Emplace(
+				Param->ParameterName,
+				Param->TexturePathName,
+				Param->IsEqualQuery,
+				static_cast<int32>(Param->Association));
+		}
+
+		// ---- Scalar ------------------------------------------------------------
+		for (const auto& Param : Wrapper.ScalarParameters)
+		{
+			if (!Param.IsValid() || !Param->IsActive) { continue; }
+
+			ScalarQueries.Emplace(
+				Param->ParameterName,
+				Param->QueryValue,
+				Param->QueryType,
+				static_cast<int32>(Param->Association));
+		}
+	};
+
+	GatherActiveParameters(MaterialParameters);
+	GatherActiveParameters(MaterialLayerParameters);
+	GatherActiveParameters(MaterialBlendParameters);
+	FString SearchRoot(SearchRootPath);
+	return FMIFinderQuery(MoveTemp(SearchRoot),
+						  MoveTemp(StaticSwitchQueries),
+						  MoveTemp(TexturePathQueries),
+						  MoveTemp(ScalarQueries));     
+	
+}
+
+void FMIFinderModule::ExecuteFilterMaterialInstance()
+{
+	FMIFinderQuery Query = BuildQuery();
+
+	const bool bHasAnyCondition =
+		   !Query.StaticSwitchQueries.IsEmpty()
+		|| !Query.TexturePathQueries.IsEmpty()
+		|| !Query.ScalarQueries.IsEmpty();
+
+	if (!bHasAnyCondition)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[MIFinder] 有効な検索条件が設定されていません。"));
+		return;
 	}
+	Finder = FMaterialInstanceFinder(MoveTemp(Query));
+	const FMIFinderQueryResult Result = Finder.Execute(/*Async =*/ false);
+	
+	OpenResultWindow(Result);
+}
+
+
+void FMIFinderModule::OpenResultWindow(const FMIFinderQueryResult& InResult)
+{
+	const TSharedRef<SWindow> Window =
+		SNew(SWindow)
+		.Title(NSLOCTEXT("MIFinder", "ResultWindowTitle", "Material Instance Search Result"))
+		.ClientSize(FVector2D(640, 480))
+		.SupportsMaximize(false)
+		.SupportsMinimize(false)
+		[
+			SNew(SMIFinderResultWindow)
+			.FinderResult(InResult)
+		];
+
+	FSlateApplication::Get().AddWindow(Window);
 }
 
 

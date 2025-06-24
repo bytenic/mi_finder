@@ -177,8 +177,7 @@ private:
 	bool TextureNameQuery(UMaterialInstance* InMaterialInstance);
 	bool StaticSwitchQuery(UMaterialInstance* InMaterialInstance);
 	bool ScalarQuery(UMaterialInstance* InMaterialInstance);
-	
-	
+
 private:
 	FMIFinderQuery Query{};
 	FMIFinderQueryResult Result{};

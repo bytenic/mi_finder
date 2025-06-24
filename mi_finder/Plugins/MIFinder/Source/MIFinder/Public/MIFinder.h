@@ -45,9 +45,12 @@ private:
 	TSharedRef<SHorizontalBox> BuildRootMaterialBox();
 	TSharedRef<SHorizontalBox> BuildSelectLayerFunctionBox();
 	TSharedRef<SHorizontalBox> BuildParametersBox();
+	FText  GetSearchRootPathText() const;
+	void OnSearchRootChanged(const FText& InNewText);
 	void OnRootMaterialChanged(const FAssetData & InAssetData);
 	void OnRootMaterialLayerChanged(const FAssetData & InAssetData);
 	void OnRootMaterialBlendChanged(const FAssetData & InAssetData);
+	FReply OnExecuteFilterClicked();
 
 	TSharedRef<SHorizontalBox> BuildStaticSwitchParameterHeader();
 	TSharedRef<SHorizontalBox> BuildTextureParameterHeader();
@@ -56,8 +59,14 @@ private:
 	void ClearAllParameterWidget();
 	void BuildParameterWidget();
 	
+	FMIFinderQuery BuildQuery();
+	void ExecuteFilterMaterialInstance();
+	void OpenResultWindow(const FMIFinderQueryResult& InResult);
+
 private:
 	TSharedPtr<FUICommandList> PluginCommands;
+
+	FString SearchRootPath = TEXT("/Game");
 	
 	TWeakObjectPtr<UMaterial> SearchRootMaterial{};
 	TWeakObjectPtr<UMaterialFunctionMaterialLayer> MaterialLayerAsset{};
@@ -73,4 +82,8 @@ private:
 	TSharedPtr<SVerticalBox> ScalarParameterInnerBox{};
 
 	MaterialParameterWrapper MaterialParameters{};
+	MaterialParameterWrapper MaterialLayerParameters{};
+	MaterialParameterWrapper MaterialBlendParameters{};
+
+	FMaterialInstanceFinder Finder{};
 };
