@@ -26,6 +26,7 @@ public class MIFinder : ModuleRules
 			new string[]
 			{
 				"Core",
+				"ApplicationCore"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
