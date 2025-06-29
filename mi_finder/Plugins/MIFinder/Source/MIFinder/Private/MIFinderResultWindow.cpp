@@ -48,7 +48,7 @@ void SMIFinderResultWindow::Construct(const FArguments& InArgs)
 		.Padding(WidgetLayoutParam::WidgetPadding)
 		[
 			SNew(SObjectPropertyEntryBox)
-			.AllowedClass(UMaterialInterface::StaticClass())
+			.AllowedClass(UMaterialInstance::StaticClass())
 			.ObjectPath(PathStr)
 			.EnableContentPicker(true)
 		];
