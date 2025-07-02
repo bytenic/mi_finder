@@ -11,15 +11,18 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Materials/MaterialInstance.h"
 #include "Materials/MaterialInstanceConstant.h"
-#include "Materials/MaterialParameterCollection.h"
 
-#include "Engine/AssetManager.h"
-#include "Engine/StreamableManager.h"
 #include "Misc/ScopedSlowTask.h"
 #include "UObject/SoftObjectPtr.h"
 #include "UObject/Package.h"
 
-namespace
+#if WITH_EDITOR
+#include "MaterialUtilities.h"   // UnrealEd モジュール
+#include "MaterialEditingLibrary.h"
+#include "MaterialStatsCommon.h"
+#endif
+
+namespace MIFilterInternal
 {
 	/**
 	 * @brief JSON では int で表現される Association を列挙型へ変換します。
@@ -36,6 +39,25 @@ namespace
 	{
 		return FMath::Abs(A - B) <= Tolerance;
 	}
+
+	void GetTextureFetchCount(
+	UMaterialInterface*      InMaterialInstance,
+	int32&                   OutNumVSTextures,
+	int32&                   OutNumPSTextures)
+	{
+#if WITH_EDITOR
+		if (!InMaterialInstance)
+		{
+			return;
+		}
+		//note: UMaterialEditingLibrary::GetStatisticsがGCを呼ぶ可能性がある？DynamicMaterialModelEditorOnlyData.cppに記載あり
+		TStrongObjectPtr<UObject> ScopeReference(InMaterialInstance);
+		const FMaterialStatistics Stats = UMaterialEditingLibrary::GetStatistics(InMaterialInstance);
+		OutNumVSTextures = Stats.NumVertexTextureSamples;	
+		OutNumPSTextures = Stats.NumPixelTextureSamples;
+#endif
+	}
+	
 }
 
 /***************************************************************************************************
@@ -89,7 +111,7 @@ FMIFinderQueryResult FMaterialInstanceFinder::Execute(bool /*bAsync*/)
  * @brief 検索ルート以下に存在するマテリアルインスタンスを列挙します。
  * @return ソフト参照の配列。
  */
-TArray<TSoftObjectPtr<UMaterialInstance>> FMaterialInstanceFinder::GetMaterrialPaths() const
+TArray<TSoftObjectPtr<UMaterialInstance>> FMaterialInstanceFinder::GetMaterialPaths() const
 {
 	TArray<TSoftObjectPtr<UMaterialInstance>> MaterialSoftPtrs;
 
@@ -125,7 +147,7 @@ TArray<TSoftObjectPtr<UMaterialInstance>> FMaterialInstanceFinder::GetMaterrialP
  */
 FMIFinderQueryResult FMaterialInstanceFinder::ExecuteSequential()
 {
-	const TArray<TSoftObjectPtr<UMaterialInstance>> MaterialPaths = GetMaterrialPaths();
+	const TArray<TSoftObjectPtr<UMaterialInstance>> MaterialPaths = GetMaterialPaths();
 
 	Result.Results.Reset();
 	Result.Results.Reserve(MaterialPaths.Num());
@@ -156,7 +178,7 @@ FMIFinderQueryResult FMaterialInstanceFinder::ExecuteSequential()
  * @param InMaterialInstance 判定対象のマテリアルインスタンス。
  * @return すべての条件を満たす場合 true。
  */
-bool FMaterialInstanceFinder::QueryMaterial(UMaterialInstance* InMaterialInstance)
+bool FMaterialInstanceFinder::QueryMaterial(UMaterialInstance* InMaterialInstance) const
 {
 	if (!InMaterialInstance)
 	{
@@ -166,7 +188,8 @@ bool FMaterialInstanceFinder::QueryMaterial(UMaterialInstance* InMaterialInstanc
 	// すべての個別クエリを AND 条件で評価
 	return TextureNameQuery(InMaterialInstance) &&
 	       StaticSwitchQuery(InMaterialInstance) &&
-	       ScalarQuery(InMaterialInstance);
+	       ScalarQuery(InMaterialInstance) &&
+	       TextureFetchQuery(InMaterialInstance);
 }
 
 /*-------------------------------- テクスチャパス ----------------------------------------------*/
@@ -174,14 +197,14 @@ bool FMaterialInstanceFinder::QueryMaterial(UMaterialInstance* InMaterialInstanc
 /**
  * @brief テクスチャパス条件を評価します。
  */
-bool FMaterialInstanceFinder::TextureNameQuery(UMaterialInstance* InMaterialInstance)
+bool FMaterialInstanceFinder::TextureNameQuery(UMaterialInstance* InMaterialInstance) const
 {
 	if (Query.TexturePathQueries.IsEmpty())
-		return true;
+		return false;
 	
 	for (const FMIFinderTexturePathQuery& TextureQuery : Query.TexturePathQueries)
 	{
-		FMaterialParameterInfo Info(*TextureQuery.ParameterName, ToAssociation(TextureQuery.Association));
+		FMaterialParameterInfo Info(*TextureQuery.ParameterName, MIFilterInternal::ToAssociation(TextureQuery.Association));
 
 		UTexture* TextureValue = nullptr;
 		if (!InMaterialInstance->GetTextureParameterValue(Info, TextureValue))
@@ -207,15 +230,15 @@ bool FMaterialInstanceFinder::TextureNameQuery(UMaterialInstance* InMaterialInst
 /**
  * @brief スタティックスイッチ条件を評価します。
  */
-bool FMaterialInstanceFinder::StaticSwitchQuery(UMaterialInstance* InMaterialInstance)
+bool FMaterialInstanceFinder::StaticSwitchQuery(UMaterialInstance* InMaterialInstance) const
 {
 	if (Query.StaticSwitchQueries.IsEmpty())
-		return true;
+		return false;
 	
 	FGuid Guid;
 	for (const FMIFinderStaticSwitchQuery& SwitchQuery : Query.StaticSwitchQueries)
 	{
-		FHashedMaterialParameterInfo Info(*SwitchQuery.ParameterName, ToAssociation(SwitchQuery.Association));
+		FHashedMaterialParameterInfo Info(*SwitchQuery.ParameterName, MIFilterInternal::ToAssociation(SwitchQuery.Association));
 		bool Value   = false;
 		bool bFound = InMaterialInstance->GetStaticSwitchParameterValue(Info, Value, Guid);
 		if (!bFound || Value != SwitchQuery.Condition)
@@ -232,14 +255,14 @@ bool FMaterialInstanceFinder::StaticSwitchQuery(UMaterialInstance* InMaterialIns
 /**
  * @brief スカラーパラメータ条件を評価します。
  */
-bool FMaterialInstanceFinder::ScalarQuery(UMaterialInstance* InMaterialInstance)
+bool FMaterialInstanceFinder::ScalarQuery(UMaterialInstance* InMaterialInstance) const
 {
 	if (Query.ScalarQueries.IsEmpty())
-		return true;
+		return false;
 	
 	for (const FMIFinderScalarQuery& ScalarQueryElem : Query.ScalarQueries)
 	{
-		FMaterialParameterInfo Info(*ScalarQueryElem.ParameterName, ToAssociation(ScalarQueryElem.Association));
+		FMaterialParameterInfo Info(*ScalarQueryElem.ParameterName, MIFilterInternal::ToAssociation(ScalarQueryElem.Association));
 
 		float ScalarValue = 0.0f;
 		if (!InMaterialInstance->GetScalarParameterValue(Info, ScalarValue))
@@ -255,7 +278,7 @@ bool FMaterialInstanceFinder::ScalarQuery(UMaterialInstance* InMaterialInstance)
 			break;
 
 		case FMIFinderScalarQuery::TypeEqual:
-			if (!NearlyEqual(ScalarValue, ScalarQueryElem.Value)) { return false; }
+			if (!MIFilterInternal::NearlyEqual(ScalarValue, ScalarQueryElem.Value)) { return false; }
 			break;
 
 		case FMIFinderScalarQuery::TypeGreater:
@@ -268,4 +291,30 @@ bool FMaterialInstanceFinder::ScalarQuery(UMaterialInstance* InMaterialInstance)
 	}
 
 	return true;
+}
+
+bool FMaterialInstanceFinder::TextureFetchQuery(UMaterialInstance* InMaterialInstance) const
+{
+	if (Query.NumVertexTextureFetch == FMIFinderQuery::InvalidTextureFetchCount &&
+		Query.NumPixelTextureFetch == FMIFinderQuery::InvalidTextureFetchCount)
+	{
+		return true;
+	}
+	
+	int32 NumVertexTextureFetch = 0;
+	int32 NumPixelTextureFetch = 0;
+	MIFilterInternal::GetTextureFetchCount(InMaterialInstance, NumVertexTextureFetch, NumPixelTextureFetch);
+
+	bool VertexResult = false;
+	if (Query.NumVertexTextureFetch > FMIFinderQuery::InvalidTextureFetchCount)
+	{
+		VertexResult = NumVertexTextureFetch > Query.NumVertexTextureFetch;
+	}
+
+	bool PixelResult = false;
+	if (Query.NumVertexTextureFetch > FMIFinderQuery::InvalidTextureFetchCount)
+	{
+		PixelResult = NumPixelTextureFetch > Query.NumPixelTextureFetch;
+	}
+	return VertexResult && PixelResult;
 }

@@ -5,6 +5,7 @@
 #include "Modules/ModuleManager.h"
 #include "MIFinderWidget.h"
 
+
 class FToolBarBuilder;
 class FMenuBuilder;
 class SHorizontalBox;
@@ -50,11 +51,14 @@ private:
 	void OnRootMaterialChanged(const FAssetData & InAssetData);
 	void OnRootMaterialLayerChanged(const FAssetData & InAssetData);
 	void OnRootMaterialBlendChanged(const FAssetData & InAssetData);
+	void OnVertexTextureFetchChanged(int32 InNewValue);
+	void OnPixelTextureFetchChanged (int32 InNewValue);
 	FReply OnExecuteFilterClicked();
 
 	TSharedRef<SHorizontalBox> BuildStaticSwitchParameterHeader();
 	TSharedRef<SHorizontalBox> BuildTextureParameterHeader();
 	TSharedRef<SHorizontalBox> BuildScalarParameterHeader();
+	TSharedRef<SWidget> BuildTextureFetchCountBox();
 
 	void ClearAllParameterWidget();
 	void BuildParameterWidget();
@@ -84,6 +88,9 @@ private:
 	MaterialParameterWrapper MaterialParameters{};
 	MaterialParameterWrapper MaterialLayerParameters{};
 	MaterialParameterWrapper MaterialBlendParameters{};
+
+	int32 VertexTextureFetchCount = FMIFinderQuery::InvalidTextureFetchCount;
+	int32 PixelTextureFetchCount  = FMIFinderQuery::InvalidTextureFetchCount;
 
 	FMaterialInstanceFinder Finder{};
 };

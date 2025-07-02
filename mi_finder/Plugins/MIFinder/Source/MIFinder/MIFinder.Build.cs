@@ -45,7 +45,8 @@ public class MIFinder : ModuleRules
 				"Slate",
 				"SlateCore",
 				"Json",
-				"PropertyEditor"
+				"PropertyEditor", 
+				"MaterialEditor"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

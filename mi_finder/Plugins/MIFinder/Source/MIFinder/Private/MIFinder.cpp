@@ -17,6 +17,7 @@
 #include "Materials/MaterialExpressionScalarParameter.h"
 #include "Materials/MaterialExpressionStaticBoolParameter.h"
 #include "Materials/MaterialExpressionTextureSampleParameter.h"
+#include "Widgets/Input/SNumericEntryBox.h"
 
 static const FName MIFinderTabName("MIFinder");
 
@@ -260,6 +261,12 @@ TSharedRef<SDockTab> FMIFinderModule::OnSpawnPluginTab(const FSpawnTabArgs& Spaw
 					SNew(SSeparator)
 					//.SeparatorImage(FAppStyle::GetBrush("Menu.Separator"))
 					.Orientation(Orient_Horizontal)
+				]
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				.Padding(WidgetLayoutParam::WidgetPadding)
+				[
+					BuildTextureFetchCountBox()
 				]
 				+ SVerticalBox::Slot()
 				.FillHeight(1.0)
@@ -588,6 +595,16 @@ FReply FMIFinderModule::OnExecuteFilterClicked()
 	return FReply::Handled();
 }
 
+void FMIFinderModule::OnVertexTextureFetchChanged(int32 InNewValue)
+{
+	VertexTextureFetchCount = InNewValue;
+}
+
+void FMIFinderModule::OnPixelTextureFetchChanged(int32 InNewValue)
+{
+	PixelTextureFetchCount = InNewValue;
+}
+
 TSharedRef<SHorizontalBox> FMIFinderModule::BuildStaticSwitchParameterHeader()
 {
 	return SNew(SHorizontalBox)
@@ -702,6 +719,93 @@ TSharedRef<SHorizontalBox> FMIFinderModule::BuildScalarParameterHeader()
 	];
 }
 
+TSharedRef<SWidget> FMIFinderModule::BuildTextureFetchCountBox()
+{
+	const FMargin Pad     = WidgetLayoutParam::WidgetPadding;
+	const int32   FontSz  = WidgetLayoutParam::ParameterTextFontSize;
+
+	// ──────────────────────────────
+	return SNew(SHorizontalBox)
+
+	// ===== Vertex Fetch =====
+	+ SHorizontalBox::Slot()
+	.AutoWidth()          // 必要なら .FillWidth(0.5f) に調整
+	.Padding(Pad)
+	[
+		SNew(SHorizontalBox)
+
+		// Label
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		.Padding(Pad)
+		[
+			SNew(STextBlock)
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(), FontSz))
+			.Text(NSLOCTEXT("ParametersTab", "VertexFetchCountLabel",
+			                "Vertex Texture Fetch Count"))
+		]
+
+		// Numeric Entry
+		+ SHorizontalBox::Slot()
+		.FillWidth(1.f)
+		.Padding(Pad)
+		[
+			SNew(SNumericEntryBox<int32>)
+			.AllowSpin(true)
+			.MinValue(0)
+			.MinSliderValue(0)
+			.ToolTipText(NSLOCTEXT("ParametersTab", "VertexFetchHint",
+				"Number of texture fetches allowed in the vertex shader.\nLeave empty (or -1) to disable this filter."))
+			.Value_Lambda([this]()
+			{
+				return VertexTextureFetchCount == FMIFinderQuery::InvalidTextureFetchCount
+					? TOptional<int32>()
+					: TOptional<int32>(VertexTextureFetchCount);
+			})
+			.OnValueChanged_Raw(this, &FMIFinderModule::OnVertexTextureFetchChanged)
+		]
+	]
+
+	// ===== Pixel Fetch =====
+	+ SHorizontalBox::Slot()
+	.AutoWidth()
+	.Padding(Pad)
+	[
+		SNew(SHorizontalBox)
+
+		// Label
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		.Padding(Pad)
+		[
+			SNew(STextBlock)
+			.Font(FSlateFontInfo(FCoreStyle::GetDefaultFont(), FontSz))
+			.Text(NSLOCTEXT("ParametersTab", "PixelFetchCountLabel",
+			                "Pixel Texture Fetch Count"))
+		]
+
+		// Numeric Entry
+		+ SHorizontalBox::Slot()
+		.FillWidth(1.f)
+		.Padding(Pad)
+		[
+			SNew(SNumericEntryBox<int32>)
+			.AllowSpin(true)
+			.MinValue(0)
+			.MinSliderValue(0)
+			.ToolTipText(NSLOCTEXT("ParametersTab", "PixelFetchHint",
+				"Number of texture fetches allowed in the pixel shader.\nLeave empty (or -1) to disable this filter."))
+			.Value_Lambda([this]()
+			{
+				return PixelTextureFetchCount == FMIFinderQuery::InvalidTextureFetchCount
+					? TOptional<int32>()
+					: TOptional<int32>(PixelTextureFetchCount);
+			})
+			.OnValueChanged_Raw(this, &FMIFinderModule::OnPixelTextureFetchChanged)
+		]
+	];
+}
+
 void FMIFinderModule::ClearAllParameterWidget()
 {
 	if( !StaticSwitchInnerBox.IsValid() ||!TextureParameterInnerBox.IsValid() || !ScalarParameterInnerBox.IsValid())
@@ -812,7 +916,9 @@ FMIFinderQuery FMIFinderModule::BuildQuery()
 	return FMIFinderQuery(MoveTemp(SearchRoot),
 						  MoveTemp(StaticSwitchQueries),
 						  MoveTemp(TexturePathQueries),
-						  MoveTemp(ScalarQueries));     
+						  MoveTemp(ScalarQueries),
+						  VertexTextureFetchCount,
+						  PixelTextureFetchCount);     
 	
 }
 

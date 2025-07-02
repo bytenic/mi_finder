@@ -122,17 +122,23 @@ struct FMIFinderQuery : public FJsonSerializable
 	JSON_SERIALIZE_ARRAY_SERIALIZABLE("StaticSwitch", StaticSwitchQueries, FMIFinderStaticSwitchQuery);
 	JSON_SERIALIZE_ARRAY_SERIALIZABLE("TexturePath", TexturePathQueries, FMIFinderTexturePathQuery);
 	JSON_SERIALIZE_ARRAY_SERIALIZABLE("Scalar", ScalarQueries, FMIFinderScalarQuery);
+	JSON_SERIALIZE("VertexTextureFetch", NumVertexTextureFetch);
+	JSON_SERIALIZE("PixelTextureFetch", NumPixelTextureFetch);
 	END_JSON_SERIALIZER
 
 	FMIFinderQuery() = default;
 	explicit FMIFinderQuery(FString                                 InSearchRoot,
 							TArray<FMIFinderStaticSwitchQuery>&&    InStaticSwitch,
 							TArray<FMIFinderTexturePathQuery> &&    InTexturePath,
-							TArray<FMIFinderScalarQuery>&&          InScalar)
+							TArray<FMIFinderScalarQuery>&&          InScalar,
+							int32 VertexTextureFetchCount = InvalidTextureFetchCount,
+							int32 PixelTextureFetchCount = InvalidTextureFetchCount)
 		: SearchRoot          (MoveTemp(InSearchRoot))
 		, StaticSwitchQueries (MoveTemp(InStaticSwitch))
 		, TexturePathQueries  (MoveTemp(InTexturePath))
 		, ScalarQueries       (MoveTemp(InScalar))
+		, NumVertexTextureFetch(VertexTextureFetchCount)
+		, NumPixelTextureFetch(PixelTextureFetchCount)
 	{}
 
 	FMIFinderQuery(const FMIFinderQuery&)            = default;
@@ -145,6 +151,9 @@ struct FMIFinderQuery : public FJsonSerializable
 	TArray<FMIFinderStaticSwitchQuery> StaticSwitchQueries{};
 	TArray<FMIFinderTexturePathQuery> TexturePathQueries{};
 	TArray<FMIFinderScalarQuery> ScalarQueries{};
+	int32 NumVertexTextureFetch = InvalidTextureFetchCount;
+	int32 NumPixelTextureFetch = InvalidTextureFetchCount;
+	static constexpr int32 InvalidTextureFetchCount = -1;
 };
 
 struct FMIFinderQueryResult : public FJsonSerializable
@@ -166,17 +175,17 @@ public:
 	FMaterialInstanceFinder();
 	FMaterialInstanceFinder(FMIFinderQuery&& Query);
 	~FMaterialInstanceFinder();
-
-
+	
 	FMIFinderQueryResult Execute(bool Async = false);
 	
 private:
-	TArray<TSoftObjectPtr<UMaterialInstance>> GetMaterrialPaths()const;
+	TArray<TSoftObjectPtr<UMaterialInstance>> GetMaterialPaths()const;
 	FMIFinderQueryResult ExecuteSequential();
-	bool QueryMaterial(UMaterialInstance* InMaterialInstance);
-	bool TextureNameQuery(UMaterialInstance* InMaterialInstance);
-	bool StaticSwitchQuery(UMaterialInstance* InMaterialInstance);
-	bool ScalarQuery(UMaterialInstance* InMaterialInstance);
+	bool QueryMaterial(UMaterialInstance* InMaterialInstance)const;
+	bool TextureNameQuery(UMaterialInstance* InMaterialInstance)const;
+	bool StaticSwitchQuery(UMaterialInstance* InMaterialInstance)const;
+	bool ScalarQuery(UMaterialInstance* InMaterialInstance)const;
+	bool TextureFetchQuery(UMaterialInstance* InMaterialInstance)const;
 
 private:
 	FMIFinderQuery Query{};
