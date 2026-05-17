@@ -149,11 +149,10 @@ struct FMIFinderQuery : public FJsonSerializable
 	FMIFinderQuery& operator=(const FMIFinderQuery&) = default;
 	FMIFinderQuery& operator=(FMIFinderQuery&&)      noexcept = default;
 	virtual ~FMIFinderQuery() override = default;
-
-	bool HasAnyCondition() const
+	
+	bool HasMaterialParameterCondition() const
 	{
-		return !RootMaterialPath.IsEmpty()
-			|| !StaticSwitchQueries.IsEmpty()
+		return !StaticSwitchQueries.IsEmpty()
 			|| !TexturePathQueries.IsEmpty()
 			|| !ScalarQueries.IsEmpty()
 			|| NumVertexTextureFetch != InvalidTextureFetchCount

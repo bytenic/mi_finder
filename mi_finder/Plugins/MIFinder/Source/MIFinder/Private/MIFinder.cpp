@@ -928,7 +928,7 @@ void FMIFinderModule::ExecuteFilterMaterialInstance()
 {
 	FMIFinderQuery Query = BuildQuery();
 
-	if (!Query.HasAnyCondition())
+	if (!Query.HasMaterialParameterCondition())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[MIFinder] 有効な検索条件が設定されていません。"));
 		return;

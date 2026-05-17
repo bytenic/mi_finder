@@ -185,7 +185,7 @@ bool FMaterialInstanceFinder::QueryMaterial(UMaterialInstance* InMaterialInstanc
 		return false;
 	}
 
-	if (!Query.HasAnyCondition())
+	if (!Query.HasMaterialParameterCondition())
 	{
 		return false;
 	}
