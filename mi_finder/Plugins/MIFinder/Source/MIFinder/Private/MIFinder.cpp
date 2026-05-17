@@ -913,7 +913,9 @@ FMIFinderQuery FMIFinderModule::BuildQuery()
 	GatherActiveParameters(MaterialLayerParameters);
 	GatherActiveParameters(MaterialBlendParameters);
 	FString SearchRoot(SearchRootPath);
+	FString RootMaterialPath = SearchRootMaterial.IsValid() ? SearchRootMaterial->GetPathName() : FString();
 	return FMIFinderQuery(MoveTemp(SearchRoot),
+						  MoveTemp(RootMaterialPath),
 						  MoveTemp(StaticSwitchQueries),
 						  MoveTemp(TexturePathQueries),
 						  MoveTemp(ScalarQueries),
@@ -926,12 +928,7 @@ void FMIFinderModule::ExecuteFilterMaterialInstance()
 {
 	FMIFinderQuery Query = BuildQuery();
 
-	const bool bHasAnyCondition =
-		   !Query.StaticSwitchQueries.IsEmpty()
-		|| !Query.TexturePathQueries.IsEmpty()
-		|| !Query.ScalarQueries.IsEmpty();
-
-	if (!bHasAnyCondition)
+	if (!Query.HasAnyCondition())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[MIFinder] 有効な検索条件が設定されていません。"));
 		return;

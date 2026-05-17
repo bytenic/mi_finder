@@ -185,11 +185,40 @@ bool FMaterialInstanceFinder::QueryMaterial(UMaterialInstance* InMaterialInstanc
 		return false;
 	}
 
-	// すべての個別クエリを AND 条件で評価
-	return TextureNameQuery(InMaterialInstance) &&
-	       StaticSwitchQuery(InMaterialInstance) &&
-	       ScalarQuery(InMaterialInstance) &&
-	       TextureFetchQuery(InMaterialInstance);
+	if (!Query.HasAnyCondition())
+	{
+		return false;
+	}
+
+	if (!RootMaterialQuery(InMaterialInstance))
+	{
+		return false;
+	}
+
+	if (!Query.TexturePathQueries.IsEmpty() && !TextureNameQuery(InMaterialInstance))
+	{
+		return false;
+	}
+
+	if (!Query.StaticSwitchQueries.IsEmpty() && !StaticSwitchQuery(InMaterialInstance))
+	{
+		return false;
+	}
+
+	if (!Query.ScalarQueries.IsEmpty() && !ScalarQuery(InMaterialInstance))
+	{
+		return false;
+	}
+
+	const bool bHasTextureFetchCondition =
+		Query.NumVertexTextureFetch != FMIFinderQuery::InvalidTextureFetchCount ||
+		Query.NumPixelTextureFetch != FMIFinderQuery::InvalidTextureFetchCount;
+	if (bHasTextureFetchCondition && !TextureFetchQuery(InMaterialInstance))
+	{
+		return false;
+	}
+
+	return true;
 }
 
 /*-------------------------------- テクスチャパス ----------------------------------------------*/
@@ -298,7 +327,7 @@ bool FMaterialInstanceFinder::TextureFetchQuery(UMaterialInstance* InMaterialIns
 	if (Query.NumVertexTextureFetch == FMIFinderQuery::InvalidTextureFetchCount &&
 		Query.NumPixelTextureFetch == FMIFinderQuery::InvalidTextureFetchCount)
 	{
-		return true;
+		return false;
 	}
 	
 	int32 NumVertexTextureFetch = 0;
@@ -317,4 +346,15 @@ bool FMaterialInstanceFinder::TextureFetchQuery(UMaterialInstance* InMaterialIns
 		PixelResult = NumPixelTextureFetch > Query.NumPixelTextureFetch;
 	}
 	return VertexResult && PixelResult;
+}
+
+bool FMaterialInstanceFinder::RootMaterialQuery(UMaterialInstance* InMaterialInstance) const
+{
+	if (Query.RootMaterialPath.IsEmpty())
+	{
+		return true;
+	}
+
+	const UMaterialInterface* ParentMaterial = InMaterialInstance->Parent;
+	return ParentMaterial && ParentMaterial->GetPathName().Equals(Query.RootMaterialPath, ESearchCase::IgnoreCase);
 }
