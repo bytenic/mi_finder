@@ -200,6 +200,8 @@ private:
 	bool StaticSwitchQuery(UMaterialInstance* InMaterialInstance)const;
 	bool ScalarQuery(UMaterialInstance* InMaterialInstance)const;
 	bool TextureFetchQuery(UMaterialInstance* InMaterialInstance)const;
+	bool VertexTextureFetchQuery(int32 NumVertexTextureFetch)const;
+	bool PixelTextureFetchQuery(int32 NumPixelTextureFetch)const;
 
 private:
 	FMIFinderQuery Query{};

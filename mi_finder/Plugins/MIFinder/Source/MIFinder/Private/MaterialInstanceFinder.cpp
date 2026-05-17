@@ -334,18 +334,28 @@ bool FMaterialInstanceFinder::TextureFetchQuery(UMaterialInstance* InMaterialIns
 	int32 NumPixelTextureFetch = 0;
 	MIFilterInternal::GetTextureFetchCount(InMaterialInstance, NumVertexTextureFetch, NumPixelTextureFetch);
 
-	bool VertexResult = false;
-	if (Query.NumVertexTextureFetch > FMIFinderQuery::InvalidTextureFetchCount)
+	return VertexTextureFetchQuery(NumVertexTextureFetch) &&
+		   PixelTextureFetchQuery(NumPixelTextureFetch);
+}
+
+bool FMaterialInstanceFinder::VertexTextureFetchQuery(int32 NumVertexTextureFetch) const
+{
+	if (Query.NumVertexTextureFetch == FMIFinderQuery::InvalidTextureFetchCount)
 	{
-		VertexResult = NumVertexTextureFetch > Query.NumVertexTextureFetch;
+		return true;
 	}
 
-	bool PixelResult = false;
-	if (Query.NumVertexTextureFetch > FMIFinderQuery::InvalidTextureFetchCount)
+	return NumVertexTextureFetch > Query.NumVertexTextureFetch;
+}
+
+bool FMaterialInstanceFinder::PixelTextureFetchQuery(int32 NumPixelTextureFetch) const
+{
+	if (Query.NumPixelTextureFetch == FMIFinderQuery::InvalidTextureFetchCount)
 	{
-		PixelResult = NumPixelTextureFetch > Query.NumPixelTextureFetch;
+		return true;
 	}
-	return VertexResult && PixelResult;
+
+	return NumPixelTextureFetch > Query.NumPixelTextureFetch;
 }
 
 bool FMaterialInstanceFinder::RootMaterialQuery(UMaterialInstance* InMaterialInstance) const
