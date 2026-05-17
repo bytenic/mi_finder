@@ -365,6 +365,17 @@ bool FMaterialInstanceFinder::RootMaterialQuery(UMaterialInstance* InMaterialIns
 		return true;
 	}
 
-	const UMaterialInterface* ParentMaterial = InMaterialInstance->Parent;
-	return ParentMaterial && ParentMaterial->GetPathName().Equals(Query.RootMaterialPath, ESearchCase::IgnoreCase);
+	const UMaterialInterface* CurrentParent = InMaterialInstance->Parent;
+	while (CurrentParent)
+	{
+		if (CurrentParent->GetPathName().Equals(Query.RootMaterialPath, ESearchCase::IgnoreCase))
+		{
+			return true;
+		}
+
+		const UMaterialInstance* ParentInstance = Cast<UMaterialInstance>(CurrentParent);
+		CurrentParent = ParentInstance ? ParentInstance->Parent : nullptr;
+	}
+
+	return false;
 }
