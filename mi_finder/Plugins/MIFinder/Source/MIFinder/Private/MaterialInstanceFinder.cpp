@@ -32,6 +32,12 @@ namespace MIFilterInternal
 		return static_cast<EMaterialParameterAssociation>(InAssociation);
 	}
 
+	FORCEINLINE bool IsLayeredAssociation(EMaterialParameterAssociation Association)
+	{
+		return Association == EMaterialParameterAssociation::LayerParameter ||
+			   Association == EMaterialParameterAssociation::BlendParameter;
+	}
+
 	/**
 	 * @brief 浮動小数点の誤差を許容した比較を行います。
 	 */
@@ -233,7 +239,44 @@ bool FMaterialInstanceFinder::TextureNameQuery(UMaterialInstance* InMaterialInst
 	
 	for (const FMIFinderTexturePathQuery& TextureQuery : Query.TexturePathQueries)
 	{
-		FMaterialParameterInfo Info(*TextureQuery.ParameterName, MIFilterInternal::ToAssociation(TextureQuery.Association));
+		const EMaterialParameterAssociation Association = MIFilterInternal::ToAssociation(TextureQuery.Association);
+		if (MIFilterInternal::IsLayeredAssociation(Association))
+		{
+			TArray<FMaterialParameterInfo> ParameterInfos;
+			TArray<FGuid> ParameterIds;
+			InMaterialInstance->GetAllTextureParameterInfo(ParameterInfos, ParameterIds);
+
+			bool bMatchedAnyCandidate = false;
+			for (const FMaterialParameterInfo& Info : ParameterInfos)
+			{
+				if (Info.Association != Association || Info.Name.ToString() != TextureQuery.ParameterName)
+				{
+					continue;
+				}
+
+				UTexture* TextureValue = nullptr;
+				if (!InMaterialInstance->GetTextureParameterValue(Info, TextureValue))
+				{
+					continue;
+				}
+
+				const FString FoundPath = TextureValue ? TextureValue->GetPathName() : FString();
+				const bool    bEqual    = FoundPath.Equals(TextureQuery.TexturePath, ESearchCase::IgnoreCase);
+				if (TextureQuery.IsEqualQuery ? bEqual : !bEqual)
+				{
+					bMatchedAnyCandidate = true;
+					break;
+				}
+			}
+
+			if (!bMatchedAnyCandidate)
+			{
+				return false;
+			}
+			continue;
+		}
+
+		FMaterialParameterInfo Info(*TextureQuery.ParameterName, Association);
 
 		UTexture* TextureValue = nullptr;
 		if (!InMaterialInstance->GetTextureParameterValue(Info, TextureValue))
@@ -267,7 +310,42 @@ bool FMaterialInstanceFinder::StaticSwitchQuery(UMaterialInstance* InMaterialIns
 	FGuid Guid;
 	for (const FMIFinderStaticSwitchQuery& SwitchQuery : Query.StaticSwitchQueries)
 	{
-		FHashedMaterialParameterInfo Info(*SwitchQuery.ParameterName, MIFilterInternal::ToAssociation(SwitchQuery.Association));
+		const EMaterialParameterAssociation Association = MIFilterInternal::ToAssociation(SwitchQuery.Association);
+		if (MIFilterInternal::IsLayeredAssociation(Association))
+		{
+			TArray<FMaterialParameterInfo> ParameterInfos;
+			TArray<FGuid> ParameterIds;
+			InMaterialInstance->GetAllStaticSwitchParameterInfo(ParameterInfos, ParameterIds);
+
+			bool bMatchedAnyCandidate = false;
+			for (const FMaterialParameterInfo& Info : ParameterInfos)
+			{
+				if (Info.Association != Association || Info.Name.ToString() != SwitchQuery.ParameterName)
+				{
+					continue;
+				}
+
+				bool Value = false;
+				if (!InMaterialInstance->GetStaticSwitchParameterValue(FHashedMaterialParameterInfo(Info), Value, Guid))
+				{
+					continue;
+				}
+
+				if (Value == SwitchQuery.Condition)
+				{
+					bMatchedAnyCandidate = true;
+					break;
+				}
+			}
+
+			if (!bMatchedAnyCandidate)
+			{
+				return false;
+			}
+			continue;
+		}
+
+		FHashedMaterialParameterInfo Info(*SwitchQuery.ParameterName, Association);
 		bool Value   = false;
 		bool bFound = InMaterialInstance->GetStaticSwitchParameterValue(Info, Value, Guid);
 		if (!bFound || Value != SwitchQuery.Condition)
@@ -291,32 +369,68 @@ bool FMaterialInstanceFinder::ScalarQuery(UMaterialInstance* InMaterialInstance)
 	
 	for (const FMIFinderScalarQuery& ScalarQueryElem : Query.ScalarQueries)
 	{
-		FMaterialParameterInfo Info(*ScalarQueryElem.ParameterName, MIFilterInternal::ToAssociation(ScalarQueryElem.Association));
+		const EMaterialParameterAssociation Association = MIFilterInternal::ToAssociation(ScalarQueryElem.Association);
+		auto MatchesScalarCondition = [&ScalarQueryElem](float ScalarValue)
+		{
+			switch (ScalarQueryElem.QueryType)
+			{
+			case FMIFinderScalarQuery::TypeLess:
+				return ScalarValue < ScalarQueryElem.Value;
+			case FMIFinderScalarQuery::TypeEqual:
+				return MIFilterInternal::NearlyEqual(ScalarValue, ScalarQueryElem.Value);
+			case FMIFinderScalarQuery::TypeGreater:
+				return ScalarValue > ScalarQueryElem.Value;
+			default:
+				return false;
+			}
+		};
+
+		if (MIFilterInternal::IsLayeredAssociation(Association))
+		{
+			TArray<FMaterialParameterInfo> ParameterInfos;
+			TArray<FGuid> ParameterIds;
+			InMaterialInstance->GetAllScalarParameterInfo(ParameterInfos, ParameterIds);
+
+			bool bMatchedAnyCandidate = false;
+			for (const FMaterialParameterInfo& Info : ParameterInfos)
+			{
+				if (Info.Association != Association || Info.Name.ToString() != ScalarQueryElem.ParameterName)
+				{
+					continue;
+				}
+
+				float CandidateScalarValue = 0.0f;
+				if (!InMaterialInstance->GetScalarParameterValue(Info, CandidateScalarValue))
+				{
+					continue;
+				}
+
+				if (MatchesScalarCondition(CandidateScalarValue))
+				{
+					bMatchedAnyCandidate = true;
+					break;
+				}
+			}
+
+			if (!bMatchedAnyCandidate)
+			{
+				return false;
+			}
+			continue;
+		}
+
+		FMaterialParameterInfo Info(*ScalarQueryElem.ParameterName, Association);
 
 		float ScalarValue = 0.0f;
 		if (!InMaterialInstance->GetScalarParameterValue(Info, ScalarValue))
 		{
 			return false;
 		}
-
-		// クエリタイプ別に判定
-		switch (ScalarQueryElem.QueryType)
+		if (!MatchesScalarCondition(ScalarValue))
 		{
-		case FMIFinderScalarQuery::TypeLess:
-			if (!(ScalarValue < ScalarQueryElem.Value)) { return false; }
-			break;
-
-		case FMIFinderScalarQuery::TypeEqual:
-			if (!MIFilterInternal::NearlyEqual(ScalarValue, ScalarQueryElem.Value)) { return false; }
-			break;
-
-		case FMIFinderScalarQuery::TypeGreater:
-			if (!(ScalarValue > ScalarQueryElem.Value)) { return false; }
-			break;
-
-		default:
-			return false; // 未対応のクエリタイプ
+			return false;
 		}
+		continue;
 	}
 
 	return true;
