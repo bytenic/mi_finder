@@ -752,14 +752,14 @@ TSharedRef<SWidget> FMIFinderModule::BuildTextureFetchCountBox()
 		[
 			SNew(SNumericEntryBox<int32>)
 			.AllowSpin(true)
-			.MinValue(0)
+			.MinValue(-1)
 			.MinSliderValue(0)
 			.ToolTipText(NSLOCTEXT("ParametersTab", "VertexFetchHint",
 				"Number of texture fetches allowed in the vertex shader.\nLeave empty (or -1) to disable this filter."))
 			.Value_Lambda([this]()
 			{
 				return VertexTextureFetchCount == FMIFinderQuery::InvalidTextureFetchCount
-					? TOptional<int32>()
+					? TOptional<int32>(-1)
 					: TOptional<int32>(VertexTextureFetchCount);
 			})
 			.OnValueChanged_Raw(this, &FMIFinderModule::OnVertexTextureFetchChanged)
@@ -791,14 +791,14 @@ TSharedRef<SWidget> FMIFinderModule::BuildTextureFetchCountBox()
 		[
 			SNew(SNumericEntryBox<int32>)
 			.AllowSpin(true)
-			.MinValue(0)
+			.MinValue(-1)
 			.MinSliderValue(0)
 			.ToolTipText(NSLOCTEXT("ParametersTab", "PixelFetchHint",
 				"Number of texture fetches allowed in the pixel shader.\nLeave empty (or -1) to disable this filter."))
 			.Value_Lambda([this]()
 			{
 				return PixelTextureFetchCount == FMIFinderQuery::InvalidTextureFetchCount
-					? TOptional<int32>()
+					? TOptional<int32>(-1)
 					: TOptional<int32>(PixelTextureFetchCount);
 			})
 			.OnValueChanged_Raw(this, &FMIFinderModule::OnPixelTextureFetchChanged)
